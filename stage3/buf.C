@@ -71,26 +71,36 @@ Allocates a free frame using the clock algorithm; if necessary, writing a dirty 
 Make sure that if the buffer frame allocated has a valid page in it, that you remove the appropriate entry from the hash table.
 */
 
-    unsigned int initialClockHand = clockHand;
+    int pinCount = 0;
+    //unsigned int initialClockHand = clockHand;
     while(1){
         advanceClock();
+        if (bufTable[clockHand].pinCnt > 0) {
+            pinCount++;
+        }
+        if (pinCount == numBufs) {
+            return BUFFEREXCEEDED;
+        }
+        //printf("Advanced %u %u\n", initialClockHand, clockHand);
         //The two loops in the logic diagram
         if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == true) { //Check valid bit
-            if (initialClockHand == clockHand) {
-                return BUFFEREXCEEDED;
-            }
+            bufTable[clockHand].refbit = false;
             continue; //Loop if valid and refbit set
         } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt > 0){
-            if (initialClockHand == clockHand) {
-                return BUFFEREXCEEDED;
-            }
             continue;
         } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt <= 0 && bufTable[clockHand].dirty == true) {
             assert(bufTable[clockHand].pinCnt == 0); //Sanity check
             /** We are suppose to flush page to disk **/
             flushFile(bufTable[clockHand].file);
+            bufTable[clockHand].dirty = false;
         }
         assert(bufTable[clockHand].dirty == false); //Should not be dirty
+        assert(bufTable[clockHand].pinCnt == 0);
+        if (bufTable[clockHand].valid == true) {
+            assert(bufTable[clockHand].pinCnt == 0);
+            cout << "Removing stuff \n";
+            hashTable->remove(bufTable[clockHand].file, bufTable[clockHand].pageNo);
+        }
         bufTable[clockHand].Clear();
         frame = clockHand;
         return OK;
@@ -111,7 +121,7 @@ First check whether the page is already in the buffer pool by invoking the looku
         return rc;
     }
     if (rc == HASHNOTFOUND) {
-        printf("Page %d not found", pageNo);
+        printf("Page %d not found\n", pageNo);
         /*Case 1) Page is not in the buffer pool.  Call allocBuf() to allocate a buffer frame and then call the method file->readPage() to read the page from disk into the buffer pool frame. Next, insert   the page into the hashtable. Finally, invoke Set() on the frame to set it up properly. Set() will leave the pinCnt for the page set to 1.  Return a pointer to the frame containing the page via the page parameter.*/
         int newFrameNo;
         rc = allocBuf(newFrameNo);
@@ -127,18 +137,8 @@ First check whether the page is already in the buffer pool by invoking the looku
     bufTable[frameNo].refbit = true;
     bufTable[frameNo].pinCnt++;
     page = &bufPool[frameNo];
+    //Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
     return OK;
-
-
-
-
-
-//Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
-
-
-
-
-    //return rc;
 }
 
 
@@ -157,9 +157,12 @@ Decrements the pinCnt of the frame containing (file, PageNo) and, if dirty == tr
         return rc;
     }
     bufTable[frameNo].pinCnt--;
-    // if dirty == true, set the dirty bit.
-    if (dirty == true) {
-        bufTable[frameNo].dirty = false;
+    //if (bufTable[frameNo].pinCnt == 0) {
+    //    bufTable[frameNo].refbit = false;
+    //}
+    // if dirty == false, set the dirty bit.
+    if (dirty == false) {
+        bufTable[frameNo].dirty = true;
     }
     return OK;
 }
@@ -186,8 +189,8 @@ frames are pinned and HASHTBLERROR if a hash table error occurred.
         return rc;
     }
     //printf("Page selected %d Frame selected %d\n", pageNo, frameNo);
-    BufDesc currBuffer = bufTable[frameNo];
-    currBuffer.Set(file, pageNo);
+    bufTable[frameNo].Set(file, pageNo);
+    bufTable[frameNo].frameNo = frameNo;
     rc = hashTable->insert(file, pageNo, frameNo);
     if (rc != OK) {
         return rc;
@@ -260,10 +263,16 @@ void BufMgr::printSelf(void)
     for (int i=0; i<numBufs; i++) {
         tmpbuf = &(bufTable[i]);
         cout << i << "\t" << (char*)(&bufPool[i])
-             << "\tpinCnt: " << tmpbuf->pinCnt;
+             << "\tpinCnt: " << tmpbuf->pinCnt
+             << "\tpageNo:" << tmpbuf->pageNo;
 
         if (tmpbuf->valid == true)
             cout << "\tvalid\n";
+        if (tmpbuf->dirty == true)
+            cout << "\tdirty\n";
+        if (tmpbuf->refbit == true)
+            cout << "\trefbit\n";
+
         cout << endl;
     };
 }

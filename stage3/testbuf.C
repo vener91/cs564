@@ -111,6 +111,7 @@ int main()
     }
     cout<< "Test passed"<<endl<<endl;
 
+    bufMgr->printSelf();
 
     cout << "Writing and reading back multiple files..." << endl;
     cout << "Expected Result: ";
@@ -129,6 +130,7 @@ int main()
       ASSERT(memcmp(page, &cmp, strlen((char*)&cmp)) == 0);
       cout << (char*)page << endl;
       CALL(bufMgr->readPage(file2, pageno2, page2));
+      cout << "This:" << (char*)page2 << "\n";
       sprintf((char*)&cmp, "test.2 Page %d %7.1f", pageno2, (float)pageno2);
       ASSERT(memcmp(page2, &cmp, strlen((char*)&cmp)) == 0);
       CALL(bufMgr->readPage(file3, pageno3, page3));
