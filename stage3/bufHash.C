@@ -108,9 +108,9 @@ Status BufHashTbl::remove(const File* file, const int pageNo) {
   while (tmpBuc) {
     if (tmpBuc->file == file && tmpBuc->pageNo == pageNo) {
       if (tmpBuc == ht[index])
-	ht[index] = tmpBuc->next;
+          ht[index] = tmpBuc->next;
       else
-	prevBuc->next = tmpBuc->next;
+          prevBuc->next = tmpBuc->next;
       delete tmpBuc;
       return OK;
     } else {
