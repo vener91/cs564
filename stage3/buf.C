@@ -66,31 +66,6 @@ BufMgr::~BufMgr() {
 
 const Status BufMgr::allocBuf(int & frame)
 {
-    int initialClockHand = clockHand;
-    while(1){
-        clockHand++; //Increment clockhand
-        clockHand = clockHand % numBufs; //Its a clock!
-
-        //The two loops in the logic diagram
-        if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == true) { //Check valid bit
-            if (initialClockHand == clockHand) {
-                return BUFFEREXCEEDED;
-            }
-            continue; //Loop if valid and refbit set
-        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt > 0){
-            if (initialClockHand == clockHand) {
-                return BUFFEREXCEEDED;
-            }
-            continue;
-        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt <= 0 && bufTable[clockHand].dirty == true) {
-            assert(bufTable[clockHand].pinCnt == 0); //Sanity check
-            /** We are suppose to flush page to disk **/
-        }
-        assert(bufTable[clockHand].dirty == false); //Should not be dirty
-        bufTable[clockHand].Set(bufTable[clockHand].file, frame);
-
-
-    }
 /*
 Allocates a free frame using the clock algorithm; if necessary, writing a dirty page back to disk. Returns BUFFEREXCEEDED if all buffer frames are pinned, UNIXERR if the call to the I/O layer returned an error when a dirty page was being written to disk and OK otherwise.  This private method will get called by the readPage() and allocPage() methods described below.
 
@@ -132,10 +107,44 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
 /*
-This call is kind of weird.  The first step is to to allocate an empty page in the specified file by invoking the file->allocatePage() method. This method will return the page number of the newly allocated page.  Then allocBuf() is called to obtain a buffer pool frame.  Next, an entry is inserted into the hash table and Set() is invoked on the frame to set it up properly.  The method returns both the page number of the newly allocated page to the caller via the pageNo parameter and a pointer to the buffer frame allocated for the page via the page parameter. Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.
+This call is kind of weird.  The first step is to to allocate an empty page in the specified file by invoking the file->allocatePage() method.
+This method will return the page number of the newly allocated page.  Then allocBuf() is called to obtain a buffer pool frame.
+Next, an entry is inserted into the hash table and Set() is invoked on the frame to set it up properly.
+The method returns both the page number of the newly allocated page to the caller via the pageNo parameter and a pointer to the buffer frame
+allocated for the page via the page parameter. Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer
+frames are pinned and HASHTBLERROR if a hash table error occurred.
 */
+    Error error;
+    Status rc = file->allocatePage(pageNo);
+    if (rc != 0) {
+        error.print(rc);
+    }
+
+    int initialClockHand = clockHand;
+    while(1){
+        clockHand++; //Increment clockhand
+        clockHand = clockHand % numBufs; //Its a clock!
+
+        //The two loops in the logic diagram
+        if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == true) { //Check valid bit
+            if (initialClockHand == clockHand) {
+                return BUFFEREXCEEDED;
+            }
+            continue; //Loop if valid and refbit set
+        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt > 0){
+            if (initialClockHand == clockHand) {
+                return BUFFEREXCEEDED;
+            }
+            continue;
+        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt <= 0 && bufTable[clockHand].dirty == true) {
+            assert(bufTable[clockHand].pinCnt == 0); //Sanity check
+            /** We are suppose to flush page to disk **/
+        }
+        assert(bufTable[clockHand].dirty == false); //Should not be dirty
+        bufTable[clockHand].Set(file, pageNo);
 
 
+    }
 
 
 }

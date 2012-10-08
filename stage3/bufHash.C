@@ -13,7 +13,7 @@
 int BufHashTbl::hash(const File* file, const int pageNo)
 {
   int tmp, value;
-  tmp = (int)file;  // cast of pointer to the file object to an integer
+  tmp = (int)(long)file;  // cast of pointer to the file object to an integer
   value = (tmp + pageNo) % HTSIZE;
   return value;
 }
@@ -72,13 +72,13 @@ Status BufHashTbl::insert(const File* file, const int pageNo, const int frameNo)
 }
 
 
-//-------------------------------------------------------------------	     
+//-------------------------------------------------------------------
 // Check if (file,pageNo) is currently in the buffer pool (ie. in
-// the hash table).  If so, return corresponding frameNo. else return 
+// the hash table).  If so, return corresponding frameNo. else return
 // HASHNOTFOUND
 //-------------------------------------------------------------------
 
-Status BufHashTbl::lookup(const File* file, const int pageNo, int& frameNo) 
+Status BufHashTbl::lookup(const File* file, const int pageNo, int& frameNo)
   {
   int index = hash(file, pageNo);
   hashBucket* tmpBuc = ht[index];
@@ -107,7 +107,7 @@ Status BufHashTbl::remove(const File* file, const int pageNo) {
 
   while (tmpBuc) {
     if (tmpBuc->file == file && tmpBuc->pageNo == pageNo) {
-      if (tmpBuc == ht[index]) 
+      if (tmpBuc == ht[index])
 	ht[index] = tmpBuc->next;
       else
 	prevBuc->next = tmpBuc->next;

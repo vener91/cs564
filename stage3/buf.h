@@ -100,17 +100,17 @@ struct BufStats
 class BufMgr
 {
 private:
-  unsigned int 	 clockHand;
-  int   	 numBufs;    	// Number of pages in buffer pool
-  BufHashTbl*    hashTable;  	// hash table mapping (File, page) to frame
-  BufDesc*	 bufTable;  	// vector of status info, 1 per page
-  BufStats	 bufStats;	// buffer pool statistics
+  unsigned int  clockHand;
+  int           numBufs;    // Number of pages in buffer pool
+  BufHashTbl*   hashTable;  // hash table mapping (File, page) to frame
+  BufDesc*      bufTable;   // vector of status info, 1 per page
+  BufStats      bufStats;   // buffer pool statistics
 
   const Status allocBuf(int & frame);   // allocate a free frame.
   const void releaseBuf(int frame); // return unused frame to end of list
   void advanceClock()
   {
-	clockHand = (clockHand + 1) % numBufs;
+      clockHand = (clockHand + 1) % numBufs;
   }
 
 
