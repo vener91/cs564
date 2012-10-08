@@ -33,22 +33,22 @@ SRCS =	db.C buf.C bufHash.C error.C page.c testbuf.C
 all:		testbuf 
 
 testbuf:	$(OBJS) 
-		$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 ##testBhash:	$(OBJS2) 
 ##		$(CXX) -o $@ $(OBJS2) $(LDFLAGS)
 
 testbuf.pure:	$(OBJS) 
-		$(PURIFY) $(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	$(PURIFY) $(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 .C.o:
-		$(CXX) $(CXXFLAGS) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 clean:
-		rm -f core \#* *.bak *~ *.o test.1 test.2 test.3 test.4 testbuf testbuf.pure .pure
+	rm -f core \#* *.bak *~ *.o test.1 test.2 test.3 test.4 testbuf testbuf.pure .pure
 
 depend:
-		makedepend -I /s/gcc/include/g++ -f$(MAKEFILE) \
+	makedepend -I /s/gcc/include/g++ -f$(MAKEFILE) \
 		$(SRCS)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
