@@ -91,6 +91,7 @@ Make sure that if the buffer frame allocated has a valid page in it, that you re
             flushFile(bufTable[clockHand].file);
         }
         assert(bufTable[clockHand].dirty == false); //Should not be dirty
+        bufTable[clockHand].Clear();
         frame = clockHand;
         return OK;
     }
@@ -148,8 +149,8 @@ frames are pinned and HASHTBLERROR if a hash table error occurred.
     }
     printf("Page selected %d Frame selected %d\n", pageNo, frameNo);
     BufDesc currBuffer = bufTable[frameNo];
-    currBuffer.pageNo = pageNo;
     currBuffer.Set(file, pageNo);
+    hashTable->insert(file, pageNo, frameNo);
 
     return OK;
 }
