@@ -102,8 +102,7 @@ Make sure that if the buffer frame allocated has a valid page in it, that you re
 const Status BufMgr::readPage(File* file, const int pageNo, Page*& page) {
 
 /*
-First check whether the page is already in the buffer pool by invoking the lookup() method on the hashtable to get a frame number.  There are two cases to be handled depending on the outcome of the lookup() call:*/
-
+First check whether the page is already in the buffer pool by invoking the lookup() method on the hashtable to get a frame number.  There are two cases to be handled depending on the outcome of the lookup() call:
 */
     Status rc;
     int frameNo = 0;
@@ -147,7 +146,6 @@ const Status BufMgr::unPinPage(File* file, const int pageNo, const bool dirty) {
 /*
 Decrements the pinCnt of the frame containing (file, PageNo) and, if dirty == true, sets the dirty bit. Returns OK if no errors occurred, HASHNOTFOUND if the page is not in the buffer pool hash table, PAGENOTPINNED if the pin count is already 0.
 */
-<<<<<<< HEAD
     Status rc;
     int frameNo;
     rc = hashTable->lookup(file, pageNo, frameNo);
@@ -163,9 +161,6 @@ Decrements the pinCnt of the frame containing (file, PageNo) and, if dirty == tr
     if (dirty == true) {
         bufTable[frameNo].dirty = false;
     }
-=======
-
->>>>>>> 01ddfe9140212605ad2accb560f2d06f0681c4bc
     return OK;
 }
 
