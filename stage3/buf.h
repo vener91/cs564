@@ -115,9 +115,9 @@ class BufMgr {
         BufMgr(const int bufs);
         ~BufMgr();
 
-        const Status readPage(File* file, const int PageNo, Page*& page);
-        const Status unPinPage(File* file, const int PageNo, const bool dirty);
-        const Status allocPage(File* file, int& PageNo, Page*& page);
+        const Status readPage(File* file, const int pageNo, Page*& page);
+        const Status unPinPage(File* file, const int pageNo, const bool dirty);
+        const Status allocPage(File* file, int& pageNo, Page*& page);
         // allocates a new, empty page
         const Status flushFile(const File* file); // writing out all dirty pages of the file
         const Status disposePage(File* file, const int PageNo); // dispose of page in file
