@@ -75,32 +75,36 @@ Make sure that if the buffer frame allocated has a valid page in it, that you re
     //unsigned int initialClockHand = clockHand;
     while(1){
         advanceClock();
-        if (bufTable[clockHand].pinCnt > 0) {
-            pinCount++;
-        }
-        if (pinCount == numBufs) {
-            return BUFFEREXCEEDED;
-        }
-        //printf("Advanced %u %u\n", initialClockHand, clockHand);
-        //The two loops in the logic diagram
-        if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == true) { //Check valid bit
-            bufTable[clockHand].refbit = false;
-            continue; //Loop if valid and refbit set
-        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt > 0){
-            continue;
-        } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt <= 0 && bufTable[clockHand].dirty == true) {
-            assert(bufTable[clockHand].pinCnt == 0); //Sanity check
-            /** We are suppose to flush page to disk **/
-            flushFile(bufTable[clockHand].file);
-            bufTable[clockHand].dirty = false;
-        }
-        assert(bufTable[clockHand].dirty == false); //Should not be dirty
-        assert(bufTable[clockHand].pinCnt == 0);
-        if (bufTable[clockHand].valid == true) {
+        //if valid is false, clear and return frame number
+        if (bufTable[clockHand].valid != false) {
+
+            if (bufTable[clockHand].pinCnt > 0) {
+                pinCount++;
+            }
+            if (pinCount == numBufs) {
+                return BUFFEREXCEEDED;
+            }
+            //printf("Advanced %u %u\n", initialClockHand, clockHand);
+            //The two loops in the logic diagram
+            if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == true) { //Check valid bit
+                bufTable[clockHand].refbit = false;
+                continue; //Loop if valid and refbit set
+            } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt > 0){
+                continue;
+            } else if (bufTable[clockHand].valid == true && bufTable[clockHand].refbit == false && bufTable[clockHand].pinCnt <= 0 && bufTable[clockHand].dirty == true) {
+                assert(bufTable[clockHand].pinCnt == 0); //Sanity check
+                /** We are suppose to flush page to disk **/
+                flushFile(bufTable[clockHand].file);
+                bufTable[clockHand].dirty = false;
+            }
+            assert(bufTable[clockHand].dirty == false); //Should not be dirty
             assert(bufTable[clockHand].pinCnt == 0);
-            cout << "Removing stuff \n";
-            hashTable->remove(bufTable[clockHand].file, bufTable[clockHand].pageNo);
-        }
+            if (bufTable[clockHand].valid == true) {
+                assert(bufTable[clockHand].pinCnt == 0);
+                cout << "Removing stuff \n";
+                hashTable->remove(bufTable[clockHand].file, bufTable[clockHand].pageNo);
+            }
+        }//end valid == false
         bufTable[clockHand].Clear();
         frame = clockHand;
         return OK;
@@ -122,13 +126,18 @@ First check whether the page is already in the buffer pool by invoking the looku
     }
     if (rc == HASHNOTFOUND) {
         printf("Page %d not found\n", pageNo);
-        /*Case 1) Page is not in the buffer pool.  Call allocBuf() to allocate a buffer frame and then call the method file->readPage() to read the page from disk into the buffer pool frame. Next, insert   the page into the hashtable. Finally, invoke Set() on the frame to set it up properly. Set() will leave the pinCnt for the page set to 1.  Return a pointer to the frame containing the page via the page parameter.*/
+        /*Case 1) Page is not in the buffer pool.  Call allocBuf() to allocate a buffer frame and then call the method file->readPage() to read the page from disk into the buffer pool frame.
+         Next, insert   the page into the hashtable. Finally, invoke Set() on the frame to set it up properly. Set() will leave the pinCnt for the page set to 1.
+         Return a pointer to the frame containing the page via the page parameter.*/
         int newFrameNo;
         rc = allocBuf(newFrameNo);
         if (rc != OK) {
             return rc;
         }
+        bufTable[frameNo].Set(file, pageNo);
+        bufTable[frameNo].frameNo = frameNo;
         file->readPage(pageNo, &bufPool[frameNo]);
+        // return OK;
     }
 
 
@@ -160,10 +169,16 @@ Decrements the pinCnt of the frame containing (file, PageNo) and, if dirty == tr
     //if (bufTable[frameNo].pinCnt == 0) {
     //    bufTable[frameNo].refbit = false;
     //}
-    // if dirty == false, set the dirty bit.
-    if (dirty == false) {
+
+    /*I think this should be changed; if false ignore  NWD */
+//    // if dirty == false, set the dirty bit.
+//    if (dirty == false) {
+//        bufTable[frameNo].dirty = true;
+//    }
+    if (dirty == true) {
         bufTable[frameNo].dirty = true;
     }
+
     return OK;
 }
 
@@ -189,12 +204,13 @@ frames are pinned and HASHTBLERROR if a hash table error occurred.
         return rc;
     }
     //printf("Page selected %d Frame selected %d\n", pageNo, frameNo);
-    bufTable[frameNo].Set(file, pageNo);
-    bufTable[frameNo].frameNo = frameNo;
     rc = hashTable->insert(file, pageNo, frameNo);
     if (rc != OK) {
         return rc;
     }
+    bufTable[frameNo].Set(file, pageNo);
+    bufTable[frameNo].frameNo = frameNo;
+
     page = &bufPool[frameNo];
 
     return OK;
@@ -222,23 +238,22 @@ const Status BufMgr::flushFile(const File* file)
   Status status;
 
   for (int i = 0; i < numBufs; i++) {
-    BufDesc* tmpbuf = &(bufTable[i]);
+    BufDesc* tmpbuf = &bufTable[i];
+
     if (tmpbuf->valid == true && tmpbuf->file == file) {
 
       if (tmpbuf->pinCnt > 0)
-	  return PAGEPINNED;
+          return PAGEPINNED;
 
       if (tmpbuf->dirty == true) {
-#ifdef DEBUGBUF
-	cout << "flushing page " << tmpbuf->pageNo
-             << " from frame " << i << endl;
-#endif
-	if ((status = tmpbuf->file->writePage(tmpbuf->pageNo,
-					      &(bufPool[i]))) != OK)
-	  return status;
-
-	tmpbuf->dirty = false;
-      }
+          #ifdef DEBUGBUF
+          cout << "flushing page " << tmpbuf->pageNo<< " from frame " << i << endl;
+         #endif
+         if ((status = tmpbuf->file->writePage(tmpbuf->pageNo,&(bufPool[i]))) != OK) {
+             return status;
+         }
+         tmpbuf->dirty = false;
+      } // end dirty true
 
       hashTable->remove(file,tmpbuf->pageNo);
 
@@ -258,7 +273,6 @@ const Status BufMgr::flushFile(const File* file)
 void BufMgr::printSelf(void)
 {
     BufDesc* tmpbuf;
-
     cout << endl << "Print buffer...\n";
     for (int i=0; i<numBufs; i++) {
         tmpbuf = &(bufTable[i]);
