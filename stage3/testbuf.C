@@ -42,7 +42,7 @@ int main()
     File*       file4;
     int		i;
     const int   num = 100;
-    int         j[num];    
+    int         j[num];
 
     // create buffer manager
 
@@ -53,13 +53,13 @@ int main()
     lstat("test.1", &statusBuf);
     if (errno == ENOENT)
       errno = 0;
-    else 
+    else
       (void)db.destroyFile("test.1");
 
     lstat("test.2", &statusBuf);
     if (errno == ENOENT)
       errno = 0;
-    else 
+    else
       (void)db.destroyFile("test.2");
 
     lstat("test.3", &statusBuf);
@@ -110,13 +110,13 @@ int main()
     }
     cout<< "Test passed"<<endl<<endl;
 
-   
+
     cout << "Writing and reading back multiple files..." << endl;
     cout << "Expected Result: ";
     cout << "The output will consist of the file name, page number, and a value."<<endl;
     cout << "The page number and the value should match."<<endl<<endl;
 
-    for (i = 0; i < num/3; i++) 
+    for (i = 0; i < num/3; i++)
     {
       CALL(bufMgr->allocPage(file2, pageno2, page2));
       sprintf((char*)page2, "test.2 Page %d %7.1f", pageno2, (float)pageno2);
@@ -199,7 +199,7 @@ int main()
     error.print(status);
 
     cout << "Test passed" <<endl<<endl;
- 
+
 
     CALL(bufMgr->allocPage(file4, i, page));
     CALL(bufMgr->unPinPage(file4, i, true));
@@ -227,7 +227,7 @@ int main()
 
     for (i = 0; i < num; i++)
       CALL(bufMgr->unPinPage(file4, i+2, true));
-    
+
     cout << "\nReading \"test.1\"...\n";
     cout << "Expected Result: ";
     cout << "Pages in order.  Values matching page number.\n\n";
@@ -238,7 +238,7 @@ int main()
       ASSERT(memcmp(page, &cmp, strlen((char*)&cmp)) == 0);
       cout << (char*)page << endl;
     }
-    
+
     cout << "Test passed" <<endl<<endl;
 
     cout << "flushing file with pages still pinned. Should generate an error" << endl;
@@ -247,7 +247,7 @@ int main()
 
     cout << "Test passed"<<endl<<endl;
 
-    for (i = 1; i < num; i++) 
+    for (i = 1; i < num; i++)
       CALL(bufMgr->unPinPage(file1, i, true));
 
     CALL(bufMgr->flushFile(file1));

@@ -125,7 +125,8 @@ First check whether the page is already in the buffer pool by invoking the looku
         return rc;
     }
     if (rc == HASHNOTFOUND) {
-        printf("Page %d not found\n", pageNo);
+        //printf("Page %d not found\n", pageNo);
+
         /*Case 1) Page is not in the buffer pool.  Call allocBuf() to allocate a buffer frame and then call the method file->readPage() to read the page from disk into the buffer pool frame.
          Next, insert   the page into the hashtable. Finally, invoke Set() on the frame to set it up properly. Set() will leave the pinCnt for the page set to 1.
          Return a pointer to the frame containing the page via the page parameter.*/
@@ -134,19 +135,23 @@ First check whether the page is already in the buffer pool by invoking the looku
         if (rc != OK) {
             return rc;
         }
-        bufTable[frameNo].Set(file, pageNo);
-        bufTable[frameNo].frameNo = frameNo;
-        file->readPage(pageNo, &bufPool[frameNo]);
+        rc = hashTable->insert(file, pageNo, newFrameNo);
+        bufTable[newFrameNo].Set(file, pageNo);
+        bufTable[newFrameNo].frameNo = newFrameNo;
+        file->readPage(pageNo, &bufPool[newFrameNo]);
         // return OK;
+        bufTable[newFrameNo].refbit = true;
+        bufTable[newFrameNo].pinCnt++;
+        page = &bufPool[newFrameNo];
     }
-
-
-    /*Case 2)  Page is in the buffer pool.  In this case set the appropriate refbit, increment the pinCnt for the page,
-      and then return a pointer to the frame containing the page via the page parameter.*/
-    bufTable[frameNo].refbit = true;
-    bufTable[frameNo].pinCnt++;
-    page = &bufPool[frameNo];
-    //Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
+    else{
+        /*Case 2)  Page is in the buffer pool.  In this case set the appropriate refbit, increment the pinCnt for the page,
+          and then return a pointer to the frame containing the page via the page parameter.*/
+        bufTable[frameNo].refbit = true;
+        bufTable[frameNo].pinCnt++;
+        page = &bufPool[frameNo];
+        //Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
+    }
     return OK;
 }
 
