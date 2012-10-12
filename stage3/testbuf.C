@@ -148,7 +148,7 @@ int main()
 
 #ifdef DEBUGBUF
     bufMgr->printSelf();
-#endif DEBUGBUF
+#endif
 
     cout << "\nReading \"test.1\"...\n";
     cout << "Expected Result: ";
@@ -181,6 +181,7 @@ int main()
     cout << "Expected Result: ";
     cout << "Pages in order.  Values matching page number.\n\n";
 
+    bufMgr->printSelf();
     for (i = 1; i < num/3; i++) {
       CALL(bufMgr->readPage(file3, i, page3));
       sprintf((char*)&cmp, "test.3 Page %d %7.1f", i, (float)i);
@@ -223,7 +224,7 @@ int main()
 
 #ifdef DEBUGBUF
     bufMgr->printSelf();
-#endif DEBUGBUF
+#endif
 
     for (i = 0; i < num; i++)
       CALL(bufMgr->unPinPage(file4, i+2, true));

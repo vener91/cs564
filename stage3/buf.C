@@ -286,11 +286,11 @@ void BufMgr::printSelf(void)
              << "\tpageNo:" << tmpbuf->pageNo;
 
         if (tmpbuf->valid == true)
-            cout << "\tvalid\n";
+            cout << "\tvalid";
         if (tmpbuf->dirty == true)
-            cout << "\tdirty\n";
+            cout << "\tdirty";
         if (tmpbuf->refbit == true)
-            cout << "\trefbit\n";
+            cout << "\trefbit";
 
         cout << endl;
     };
