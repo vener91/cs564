@@ -1,10 +1,9 @@
 #include <sys/types.h>
 #include <functional>
 #include <iostream>
-#include <stdio.h>
 using namespace std;
 #include "error.h"
-
+#include "stdio.h"
 void Error::print(Status status)
 {
   cerr << "Error: ";
@@ -51,7 +50,7 @@ void Error::print(Status status)
     case SCANTABFULL:  cerr << "scan table full"; break;
     case FILEEOF:      cerr << "end of file encountered"; break;
     case FILEHDRFULL:  cerr << "heapfile hdear page is full"; break;
-
+   
 
     // Index errors
 
@@ -78,7 +77,7 @@ void Error::print(Status status)
     case RELEXISTS:    cerr << "relation exists already"; break;
     case NOINDEX:      cerr << "no index exists"; break;
     case ATTRTYPEMISMATCH:   cerr << "attribute type mismatch"; break;
-    case TMP_RES_EXISTS:    cerr << "temp result already exists"; break;
+    case TMP_RES_EXISTS:    cerr << "temp result already exists"; break;    
     case INDEXEXISTS:  cerr << "index exists already"; break;
 
     default:           cerr << "undefined error status: " << status;
