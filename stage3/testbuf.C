@@ -184,6 +184,7 @@ int main()
     bufMgr->printSelf();
     for (i = 1; i < num/3; i++) {
       CALL(bufMgr->readPage(file3, i, page3));
+      bufMgr->printSelf();
       sprintf((char*)&cmp, "test.3 Page %d %7.1f", i, (float)i);
       ASSERT(memcmp(page3, &cmp, strlen((char*)&cmp)) == 0);
       cout << (char*)page3 << endl;
