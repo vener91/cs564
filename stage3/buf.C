@@ -136,10 +136,15 @@ First check whether the page is already in the buffer pool by invoking the looku
             return rc;
         }
         rc = hashTable->insert(file, pageNo, newFrameNo);
+        if (rc != OK) {
+            return rc;
+        }
         bufTable[newFrameNo].Set(file, pageNo);
         bufTable[newFrameNo].frameNo = newFrameNo;
         rc = file->readPage(pageNo, &bufPool[newFrameNo]);
         if (rc != OK) {
+            //Repair damage
+            disposePage(file, pageNo);
             return rc;
         }
         page = &bufPool[newFrameNo];
