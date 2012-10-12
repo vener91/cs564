@@ -138,20 +138,19 @@ First check whether the page is already in the buffer pool by invoking the looku
         rc = hashTable->insert(file, pageNo, newFrameNo);
         bufTable[newFrameNo].Set(file, pageNo);
         bufTable[newFrameNo].frameNo = newFrameNo;
-        file->readPage(pageNo, &bufPool[newFrameNo]);
-        // return OK;
-        bufTable[newFrameNo].refbit = true;
-        bufTable[newFrameNo].pinCnt++;
+        rc = file->readPage(pageNo, &bufPool[newFrameNo]);
+        if (rc != OK) {
+            return rc;
+        }
         page = &bufPool[newFrameNo];
-    }
-    else{
+    } else {
         /*Case 2)  Page is in the buffer pool.  In this case set the appropriate refbit, increment the pinCnt for the page,
           and then return a pointer to the frame containing the page via the page parameter.*/
         bufTable[frameNo].refbit = true;
         bufTable[frameNo].pinCnt++;
         page = &bufPool[frameNo];
-        //Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
     }
+    //Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED if all buffer frames are pinned, HASHTBLERROR if a hash table error occurred.
     return OK;
 }
 
@@ -170,6 +169,7 @@ Decrements the pinCnt of the frame containing (file, PageNo) and, if dirty == tr
         rc = PAGENOTPINNED;
         return rc;
     }
+    printf("frame no:%d\n", frameNo);
     bufTable[frameNo].pinCnt--;
     //if (bufTable[frameNo].pinCnt == 0) {
     //    bufTable[frameNo].refbit = false;
