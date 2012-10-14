@@ -16,6 +16,25 @@
 		     } \
                    }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// Title:            Project Stage 3-The Buffer Manager
+// Files:            buf.C
+// Semester:         CS-564 Fall 2012
+//
+// Team Name:        Krankit
+// Member Name:      TerChrng Ng
+// CS Login:         ter@cs.wisc.edu
+// Student ID:       906 515 5054
+// // // // // // // // // // // // // // //
+// Member Name:      Nate DiPiazza
+// CS Login:         ndipiazz@cs.wisc.edu
+// Student ID:       906 653 1493
+//
+// Lecturer's Name:  AnHai Doan
+// Lab Section:      001
+///////////////////////////////////////////////////////////////////////////////
+
 //----------------------------------------
 // Constructor of the class BufMgr
 //----------------------------------------
@@ -64,12 +83,16 @@ BufMgr::~BufMgr() {
 }
 
 
+/** This method allocates a free frame using the clock algorithm;
+if necessary, writing a dirty page back to disk.
+Returns BUFFEREXCEEDED if all buffer frames are pinned,
+UNIXERR if the call to the I/O layer returned an error when a dirty page was being written to disk and OK otherwise.
+This private method will get called by the readPage() and allocPage() methods.
+If the buffer frame allocated has a valid page in it, then remove the appropriate entry from the hash table.
+@param int &frame-reference to the frame being allocated
+@return const Status-returns status information to callee.
+**/
 const Status BufMgr::allocBuf(int & frame) {
-/*
-Allocates a free frame using the clock algorithm; if necessary, writing a dirty page back to disk. Returns BUFFEREXCEEDED if all buffer frames are pinned, UNIXERR if the call to the I/O layer returned an error when a dirty page was being written to disk and OK otherwise.  This private method will get called by the readPage() and allocPage() methods described below.
-
-Make sure that if the buffer frame allocated has a valid page in it, that you remove the appropriate entry from the hash table.
-*/
 
     int pinCount = 0;
     //unsigned int initialClockHand = clockHand;
