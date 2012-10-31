@@ -16,7 +16,7 @@
 // openfile hash table implementation
 OpenFileHashTbl::OpenFileHashTbl()
 {
-  HTSIZE = 113; // hack 
+  HTSIZE = 113; // hack
   // allocate an array of pointers to fleHashBuckets
   ht = new fileHashBucket* [HTSIZE];
   for(int i=0; i < HTSIZE; i++) ht[i] = NULL;
@@ -52,7 +52,7 @@ int OpenFileHashTbl::hash(const string fileName)
 // returns OK if insertion was successful, HASHTBLERROR if an error occurred
 //---------------------------------------------------------------
 
-Status OpenFileHashTbl::insert(const string fileName, File* file ) 
+Status OpenFileHashTbl::insert(const string fileName, File* file )
 {
   int index = hash(fileName);
   fileHashBucket* tmpBuc = ht[index];
@@ -72,7 +72,7 @@ Status OpenFileHashTbl::insert(const string fileName, File* file )
 }
 
 
-//-------------------------------------------------------------------	     
+//-------------------------------------------------------------------
 // returns OK if file is already open.  Else returns HASHNOTFOUND
 // if the file is open it also returns a pointer to the associated file object
 // via the file
@@ -83,7 +83,7 @@ Status OpenFileHashTbl::find(const string fileName, File*& file)
   int index = hash(fileName);
   fileHashBucket* tmpBuc = ht[index];
   while (tmpBuc) {
-    if (tmpBuc->fname == fileName) 
+    if (tmpBuc->fname == fileName)
     {
       file = tmpBuc->file;
       return OK;
@@ -114,7 +114,7 @@ Status OpenFileHashTbl::erase(const string fileName)
       tmpBuc->file = NULL;
       delete tmpBuc;
       return OK;
-    } 
+    }
     else {
       prevBuc = tmpBuc;
       tmpBuc = tmpBuc->next;
@@ -276,7 +276,7 @@ Status File::allocatePage(int& pageNo)
 
   if ((status = intwrite(0, &header)) != OK)
     return status;
-  
+
 #ifdef DEBUGFREE
   listFree();
 #endif
@@ -462,7 +462,7 @@ DB::DB()
 }
 
 
-// Destroy DB object. 
+// Destroy DB object.
 
 DB::~DB()
 {
@@ -471,10 +471,10 @@ DB::~DB()
 }
 
 
-  
+
 // Create a database file.
 
-const Status DB::createFile(const string &fileName) 
+const Status DB::createFile(const string &fileName)
 {
   File*  file;
   if (fileName.empty())
@@ -490,7 +490,7 @@ const Status DB::createFile(const string &fileName)
 
 // Delete a database file.
 
-const Status DB::destroyFile(const string & fileName) 
+const Status DB::destroyFile(const string & fileName)
 {
   File* file;
 
@@ -498,7 +498,7 @@ const Status DB::destroyFile(const string & fileName)
 
   // Make sure file is not open currently.
   if (openFiles.find(fileName, file) == OK) return FILEOPEN;
-  
+
   // Do the actual work
   return File::destroy(fileName);
 }
@@ -515,8 +515,8 @@ const Status DB::openFile(const string & fileName, File*& filePtr)
 
   if (fileName.empty()) return BADFILE;
 
-  // Check if file already open. 
-  if (openFiles.find(fileName, file) == OK) 
+  // Check if file already open.
+  if (openFiles.find(fileName, file) == OK)
   {
       // file is already open, call open again on the file object
       // to increment it's open count.

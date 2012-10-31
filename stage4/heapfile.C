@@ -1,5 +1,7 @@
 #include "heapfile.h"
 #include "error.h"
+#include <stdio.h>
+#include <assert.h>
 
 // routine to create a heapfile
 const Status createHeapFile(const string fileName)
@@ -21,30 +23,37 @@ const Status createHeapFile(const string fileName)
         status = db.createFile(fileName);
         if (status != OK) return status;
 
+        status = db.openFile(fileName, file);
+        if (status != OK) return status;
+
         status = bufMgr->allocPage(file, newPageNo, newPage);
         if (status != OK) return status;
 
+        assert(newPageNo == 1);
         //Initialize values
         hdrPage = (FileHdrPage*) newPage;
         hdrPageNo = newPageNo;
 
         strcpy(hdrPage->fileName, fileName.c_str());
-        hdrPage->firstPage = newPageNo;
+        assert(strlen(hdrPage->fileName) != 0);
 
         //First data page
         status = bufMgr->allocPage(file, newPageNo, newPage);
         if (status != OK) return status;
 
         newPage->init(newPageNo);
+        assert(newPageNo == 2);
 
         //Update header with info
+        hdrPage->firstPage = newPageNo;
         hdrPage->lastPage = newPageNo;
-        hdrPage->pageCnt = 2;
+        hdrPage->pageCnt = 1;
         hdrPage->recCnt = 0;
 
         //Unpin and make dirty
         bufMgr->unPinPage(file, hdrPageNo, true);
         bufMgr->unPinPage(file, newPageNo, true);
+        return OK;
     }
     return (FILEEXISTS);
 }
@@ -176,8 +185,8 @@ const Status HeapFileScan::startScan(const int offset_,
 
     if ((offset_ < 0 || length_ < 1) ||
         (type_ != STRING && type_ != INTEGER && type_ != FLOAT) ||
-        (type_ == INTEGER && length_ != sizeof(int)
-         || type_ == FLOAT && length_ != sizeof(float)) ||
+        ((type_ == INTEGER && length_ != sizeof(int))
+         || (type_ == FLOAT && length_ != sizeof(float))) ||
         (op_ != LT && op_ != LTE && op_ != EQ && op_ != GTE && op_ != GT && op_ != NE))
     {
         return BADSCANPARM;
@@ -191,7 +200,6 @@ const Status HeapFileScan::startScan(const int offset_,
 
     return OK;
 }
-
 
 const Status HeapFileScan::endScan()
 {
