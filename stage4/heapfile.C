@@ -445,6 +445,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         return INVALIDRECLEN;
     }
 
+    status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+    if (status != OK) return status;
+
     //Get firstPage
     newPageNo = headerPage->firstPage;
     unpinstatus = false;
@@ -455,39 +458,54 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             //Need to allocate new page
             status = bufMgr->allocPage(filePtr, newPageNo, newPage);
             if (status != OK) return status;
+
             //printf("Allocated new page %d %p\n", newPageNo, newPage);
+
+            status = bufMgr->readPage(filePtr, curPageNo, curPage);
+            if (status != OK) return status;
+            curPage->setNextPage(newPageNo);
+            curDirtyFlag = true;
+            status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+            if (status != OK) return status;
+
             newPage->init(newPageNo);
             headerPage->lastPage = newPageNo;
-            /*
-            newPage->setNextPage(newnewPageNo);
-            newPage = newnewPage;
-            newPageNo = newnewPageNo;
-            headerPage->lastPage = newnewPageNo;
-            */
+            curPageNo = newPageNo;
+            curPage = newPage;
+            unpinstatus = true;
+            curDirtyFlag = true;
         } else {
-            status = bufMgr->readPage(filePtr, newPageNo, newPage);
+            status = bufMgr->readPage(filePtr, newPageNo, curPage);
             if (status != OK) return status;
+            curPageNo = newPageNo;
+            curDirtyFlag = false;
+            unpinstatus = false;
         }
 
         //cout << "Status: " << newPage << "\n";
-        unpinstatus = false;
 
-        status = newPage->insertRecord(rec, rid);
+        status = curPage->insertRecord(rec, rid);
         if (status == OK || status != NOSPACE) {
+            //cout << "Insert \n";
             unpinstatus = true;
+            curDirtyFlag = true;
             outRid = rid;
+            curRec = rid;
         }
         if (status != OK && status != NOSPACE) return status;
-
-        status = bufMgr->unPinPage(filePtr, newPageNo, unpinstatus);
-        if (status != OK) return status;
 
         if (unpinstatus == true) {
             return OK;
         }
 
-        status = newPage->getNextPage(newPageNo);
+        //cout << curPageNo << " " << curPage << endl;
+
+        status = curPage->getNextPage(newPageNo);
         if (status != OK) return status;
+
+        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        if (status != OK) return status;
+
     }
     return OK; //Would never reach here
 }
