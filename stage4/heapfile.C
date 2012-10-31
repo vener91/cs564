@@ -463,15 +463,16 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         status = newPage->insertRecord(rec, rid);
         if (status == OK || status != NOSPACE) {
             unpinstatus = true;
-            status = bufMgr->unPinPage(filePtr, newPageNo, unpinstatus);
-            if (status != OK) return status;
             outRid = rid;
-            return status;
         }
         if (status != OK && status != NOSPACE) return status;
 
         status = bufMgr->unPinPage(filePtr, newPageNo, unpinstatus);
         if (status != OK) return status;
+
+        if (unpinstatus == true) {
+            return OK;
+        }
 
         status = newPage->getNextPage(newPageNo);
         if (status != OK) return status;
