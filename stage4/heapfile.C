@@ -422,9 +422,7 @@ InsertFileScan::~InsertFileScan()
 const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 {
     Page*	newPage;
-    Page*	newnewPage;
     int		newPageNo;
-    int		newnewPageNo;
     Status	status;
     bool unpinstatus;
     RID		rid;
@@ -465,6 +463,8 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         status = newPage->insertRecord(rec, rid);
         if (status == OK || status != NOSPACE) {
             unpinstatus = true;
+            status = bufMgr->unPinPage(filePtr, newPageNo, unpinstatus);
+            if (status != OK) return status;
             outRid = rid;
             return status;
         }
