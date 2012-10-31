@@ -436,16 +436,11 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         return INVALIDRECLEN;
     }
 
-
     //Get firstPage
     newPageNo = headerPage->firstPage;
-    status = bufMgr->readPage(filePtr, newPageNo, newPage);
-    if (status != OK) return status;
     unpinstatus = false;
     while(true){
         //Get the next page
-        status = newPage->getNextPage(newPageNo);
-        if (status != OK) return status;
         if (newPageNo == -1) {
             //No more page
             //Need to allocate new page
@@ -464,6 +459,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         }
 
         status = bufMgr->unPinPage(filePtr, newPageNo, unpinstatus);
+        if (status != OK) return status;
+
+        status = newPage->getNextPage(newPageNo);
         if (status != OK) return status;
     }
     return OK; //Would never reach here
