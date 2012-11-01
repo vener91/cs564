@@ -103,6 +103,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
         returnStatus = status;
         return;
     }
+    returnStatus = OK;
 }
 
 // the destructor closes the file
