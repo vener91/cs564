@@ -93,7 +93,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
         hdrDirtyFlag = false;
 
         curPageNo = headerPage->firstPage;
-        cout << headerPage->firstPage << " " << headerPage->lastPage << endl;
+        //cout << headerPage->firstPage << " " << headerPage->lastPage << endl;
         bufMgr->readPage(filePtr, curPageNo, curPage);
         if (status != OK) {
             returnStatus = status;
@@ -128,7 +128,7 @@ HeapFile::~HeapFile()
 		curPage = NULL;
 		curPageNo = 0;
 		curDirtyFlag = false;
-		if (status != OK) cerr << "error in unpin of date page\n";
+		if (status != OK) cerr << "error in unpin of data page\n";
     }
 
 	 // unpin the header page
@@ -276,6 +276,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
     while(true){
         //Get the next page
         if (nextPageNo == -1) {
+            curPage = NULL;
             return FILEEOF; //No more page
         }
 
@@ -309,7 +310,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
                     curRec = nextRid;
                     if (matchRec(rec)){ //If match
                         outRid = nextRid;
-                        status = bufMgr->unPinPage(filePtr, curPageNo, false);
+                        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
                         if (status != OK) return status;
                         return OK;
                     }
@@ -349,9 +350,13 @@ const Status HeapFileScan::deleteRecord()
 {
     Status status;
 
-    // delete the "current" record from the page
+    assert(curPageNo == curRec.pageNo);
+    status = bufMgr->readPage(filePtr, curPageNo, curPage);
+    if (status != OK) return status;
     status = curPage->deleteRecord(curRec);
     curDirtyFlag = true;
+    status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+    if (status != OK) return status;
 
     // reduce count of number of records in the file
     headerPage->recCnt--;
