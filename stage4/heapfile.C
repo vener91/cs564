@@ -122,14 +122,16 @@ HeapFile::~HeapFile()
     cout << "invoking heapfile destructor on file " << headerPage->fileName << endl;
 
     // see if there is a pinned data page. If so, unpin it
-    if (curPage != NULL)
+    /*
+    if (curpage != null)
     {
-    	status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-		curPage = NULL;
-		curPageNo = 0;
-		curDirtyFlag = false;
-		if (status != OK) cerr << "error in unpin of data page\n";
+    	status = bufmgr->unpinpage(fileptr, curpageno, curdirtyflag);
+		curpage = null;
+		curpageno = 0;
+		curdirtyflag = false;
+		if (status != ok) cerr << "error in unpin of data page\n";
     }
+    */
 
 	 // unpin the header page
     status = bufMgr->unPinPage(filePtr, headerPageNo, hdrDirtyFlag);
@@ -437,6 +439,7 @@ InsertFileScan::~InsertFileScan()
 {
     Status status;
     // unpin last page of the scan
+    /*
     if (curPage != NULL)
     {
         status = bufMgr->unPinPage(filePtr, curPageNo, true);
@@ -444,6 +447,7 @@ InsertFileScan::~InsertFileScan()
         curPageNo = 0;
         if (status != OK) cerr << "error in unpin of data page\n";
     }
+    */
 }
 
 // Insert a record into the file
