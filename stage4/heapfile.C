@@ -99,11 +99,6 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
             returnStatus = status;
             return;
         }
-        status = bufMgr->unPinPage(filePtr, curPageNo, true);
-        if (status != OK) {
-            returnStatus = status;
-            return;
-        }
         curDirtyFlag = false;
         curRec = NULLRID;
 
@@ -122,16 +117,14 @@ HeapFile::~HeapFile()
     cout << "invoking heapfile destructor on file " << headerPage->fileName << endl;
 
     // see if there is a pinned data page. If so, unpin it
-    /*
-    if (curpage != null)
+    if (curPage != NULL)
     {
-    	status = bufmgr->unpinpage(fileptr, curpageno, curdirtyflag);
-		curpage = null;
-		curpageno = 0;
-		curdirtyflag = false;
-		if (status != ok) cerr << "error in unpin of data page\n";
+    	status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+		curPage = NULL;
+		curPageNo = 0;
+		curDirtyFlag = false;
+		if (status != OK) cerr << "error in unpin of data page\n";
     }
-    */
 
 	 // unpin the header page
     status = bufMgr->unPinPage(filePtr, headerPageNo, hdrDirtyFlag);
@@ -278,9 +271,11 @@ const Status HeapFileScan::scanNext(RID& outRid)
     while(true){
         //Get the next page
         if (nextPageNo == -1) {
-            curPage = NULL;
             return FILEEOF; //No more page
         }
+
+        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        if (status != OK) return status;
 
         //cout << "Page: " << nextPageNo << endl;
         status = bufMgr->readPage(filePtr, nextPageNo, curPage);
@@ -312,8 +307,6 @@ const Status HeapFileScan::scanNext(RID& outRid)
                     curRec = nextRid;
                     if (matchRec(rec)){ //If match
                         outRid = nextRid;
-                        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-                        if (status != OK) return status;
                         return OK;
                     }
                     tmpRid = nextRid;
@@ -330,9 +323,6 @@ const Status HeapFileScan::scanNext(RID& outRid)
             }
         }
         status = curPage->getNextPage(nextPageNo);
-        if (status != OK) return status;
-
-        status = bufMgr->unPinPage(filePtr, curPageNo, false);
         if (status != OK) return status;
     }
     return OK;
@@ -439,7 +429,6 @@ InsertFileScan::~InsertFileScan()
 {
     Status status;
     // unpin last page of the scan
-    /*
     if (curPage != NULL)
     {
         status = bufMgr->unPinPage(filePtr, curPageNo, true);
@@ -447,7 +436,6 @@ InsertFileScan::~InsertFileScan()
         curPageNo = 0;
         if (status != OK) cerr << "error in unpin of data page\n";
     }
-    */
 }
 
 // Insert a record into the file
@@ -481,8 +469,6 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
             //printf("Allocated new page %d %p\n", newPageNo, newPage);
 
-            status = bufMgr->readPage(filePtr, curPageNo, curPage);
-            if (status != OK) return status;
             curPage->setNextPage(newPageNo);
             curDirtyFlag = true;
             status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
@@ -495,6 +481,12 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             unpinstatus = true;
             curDirtyFlag = true;
         } else {
+
+            if (curPage != NULL) {
+                status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                if (status != OK) return status;
+            }
+
             status = bufMgr->readPage(filePtr, newPageNo, curPage);
             if (status != OK) return status;
             curPageNo = newPageNo;
@@ -523,12 +515,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         status = curPage->getNextPage(newPageNo);
         if (status != OK) return status;
 
-        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-        if (status != OK) return status;
-
         if (unpinstatus == true) {
-            curPage = NULL;
-            curPageNo = 0;
             return OK;
         }
 
