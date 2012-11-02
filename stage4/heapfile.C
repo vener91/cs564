@@ -14,14 +14,16 @@ const Status createHeapFile(const string fileName)
     Page*           newPage;
 
     //When you have done all this unpin both pages and mark them as dirty.
-
+    
+    
+    //TODO Better way????????????????????
     // try to open the file. This should return an error
-    status = db.openFile(fileName, file);
-    if (status != OK) {
+    //status = db.openFile(fileName, file);
+    //if (status != OK) {
         // file doesn't exist. First create it and allocate
         // an empty header page and data page.
         status = db.createFile(fileName);
-        if (status != OK) return status;
+        //if (status != OK) return status;
 
         status = db.openFile(fileName, file);
         if (status != OK) return status;
@@ -29,7 +31,7 @@ const Status createHeapFile(const string fileName)
         status = bufMgr->allocPage(file, newPageNo, newPage);
         if (status != OK) return status;
 
-        assert(newPageNo == 1);
+        //assert(newPageNo == 1);
         //Initialize values
         hdrPage = (FileHdrPage*) newPage;
         hdrPageNo = newPageNo;
@@ -42,7 +44,7 @@ const Status createHeapFile(const string fileName)
         if (status != OK) return status;
 
         newPage->init(newPageNo);
-        assert(newPageNo == 2);
+        //assert(newPageNo == 2);
 
         //Update header with info
         hdrPage->firstPage = newPageNo;
@@ -53,9 +55,13 @@ const Status createHeapFile(const string fileName)
         //Unpin and make dirty
         bufMgr->unPinPage(file, hdrPageNo, true);
         bufMgr->unPinPage(file, newPageNo, true);
-        return OK;
-    }
-    return (FILEEXISTS);
+        
+        // file not needed anymore
+        status = db.closeFile(file);
+        
+        return status;
+    //}
+    //return (FILEEXISTS);
 }
 
 // routine to destroy a heapfile
@@ -454,7 +460,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     if (status != OK) return status;
 
     //Get firstPage
-    newPageNo = headerPage->firstPage;
+    //newPageNo = headerPage->firstPage;
+    //should be more efficient
+    newPageNo = headerPage->lastPage;
     unpinstatus = false;
     while(true){
         //Get the next page
