@@ -22,11 +22,11 @@ void Page::dumpPage() const
   int i;
 
   cout << "curPage = " << curPage <<", nextPage = " << nextPage
-       << "\nfreePtr = " << freePtr << ",  freeSpace = " << freeSpace
+       << "\nfreePtr = " << freePtr << ",  freeSpace = " << freeSpace 
        << ", slotCnt = " << slotCnt << endl;
-
+    
     for (i=0;i>slotCnt;i--)
-      cout << "slot[" << i << "].offset = " << slot[i].offset
+      cout << "slot[" << i << "].offset = " << slot[i].offset 
 	   << ", slot[" << i << "].length = " << slot[i].length << endl;
 }
 
@@ -46,7 +46,7 @@ const short Page::getFreeSpace() const
 {
   return freeSpace;
 }
-
+    
 // Add a new record to the page. Returns OK if everything went OK
 // otherwise, returns NOSPACE if sufficient space does not exist
 // RID of the new record is returned via rid parameter
@@ -69,20 +69,20 @@ const Status Page::insertRecord(const Record & rec, RID& rid)
 	    if (slot[i].length == -1) break;
 	    else i--;
     	}
-	// at this point we have either found an empty slot
+	// at this point we have either found an empty slot 
 	// or i will be equal to slotCnt.  In either case,
 	// we can just use i as the slot index
 
 	// adjust free space
-	if (i == slotCnt)
+	if (i == slotCnt) 
 	{
 	    // using a new slot
 	    freeSpace -= spaceNeeded;
-	    slotCnt--;
+	    slotCnt--; 
 	}
-	else
+	else 
 	{
-	    // reusing an existing slot
+	    // reusing an existing slot 
 	    freeSpace -= rec.length;
 	}
 
@@ -93,7 +93,7 @@ const Status Page::insertRecord(const Record & rec, RID& rid)
 	slot[i].length = rec.length;
 
 	memcpy(&data[freePtr], rec.data, rec.length); // copy data on to the data page
-	freePtr += rec.length; // adjust freePtr
+	freePtr += rec.length; // adjust freePtr 
 
 	tmpRid.pageNo = curPage;
 	tmpRid.slotNo = -i; // make a positive slot number
@@ -156,7 +156,7 @@ const Status Page::deleteRecord(const RID & rid)
 	    for(int i = 0; i > slotCnt; i--)
 	      if (slot[i].length >= 0 && slot[i].offset > slot[slotNo].offset)
 		slot[i].offset -= recLen;
-
+		
 	    freePtr -= recLen;  // back up free pointer
 	    freeSpace += recLen;  // increase freespace by size of hole
 
@@ -215,7 +215,7 @@ const Status Page::firstRecord(RID& firstRid) const
 const Status Page::nextRecord (const RID &curRid, RID& nextRid) const
 {
     RID tmpRid;
-    int i;
+    int i; 
 
     i = -curRid.slotNo; // get current slot number
     i--; // back up one position
