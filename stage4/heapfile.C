@@ -469,9 +469,8 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
             status = bufMgr->allocPage(filePtr, newPageNo, newPage);
             if (status != OK) return status;
 
-
             //printf("Allocated new page %d %p\n", newPageNo, newPage);
-
+            
             status = bufMgr->readPage(filePtr, curPageNo, curPage);
             if (status != OK) return status;
             curPage->setNextPage(newPageNo);
@@ -516,8 +515,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
         status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
         if (status != OK) return status;
-
+        
         if (unpinstatus == true) {
+            curPage = NULL;
+            curPageNo = 0;
             return OK;
         }
 
