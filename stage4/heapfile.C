@@ -455,9 +455,8 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     }
 
     //Get firstPage
-    newPageNo = headerPage->firstPage;
     //should be more efficient
-    //newPageNo = headerPage->lastPage;
+    newPageNo = headerPage->lastPage;
     unpinstatus = false;
     while(true){
         //Get the next page
