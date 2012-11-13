@@ -13,17 +13,17 @@
 
 const Status RelCatalog::destroyRel(const string & relation)
 {
-  Status status;
+    Status status;
 
-  if (relation.empty() || 
-      relation == string(RELCATNAME) || 
-      relation == string(ATTRCATNAME))
-    return BADCATPARM;
-
-
+    if (relation.empty() ||
+            relation == string(RELCATNAME) ||
+            relation == string(ATTRCATNAME))
+        return BADCATPARM;
 
 
+    destroyHeapFile(relation.c_str());
 
+    return OK;
 }
 
 
@@ -39,15 +39,53 @@ const Status RelCatalog::destroyRel(const string & relation)
 
 const Status AttrCatalog::dropRelation(const string & relation)
 {
-  Status status;
-  AttrDesc *attrs;
-  int attrCnt, i;
 
-  if (relation.empty()) return BADCATPARM;
+    HeapFileScan* hfs;
+    Status status;
+    AttrDesc *attrs;
+    Record rec;
+    RID rid;
+    int attrCnt, i;
 
+    if (relation.empty()) return BADCATPARM;
 
+    hfs = new HeapFileScan(RELCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
 
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG Destory.c Rel: " << rec.data << endl;
+        if (strcmp((char*)rec.data, relation.c_str()) == 0) {
+            //Remove record
+            hfs->deleteRecord();
+        }
+    }
 
+    delete hfs;
+
+    hfs = new HeapFileScan(ATTRCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
+
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG Destory.c Rel: " << rec.data << endl;
+        if (strcmp((char*)rec.data, relation.c_str()) == 0) {
+            //Remove record
+            hfs->deleteRecord();
+        }
+    }
+
+    delete hfs;
 
 }
 
