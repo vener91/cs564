@@ -33,11 +33,11 @@ const Status UT_Load(const string & relation, const string & fileName)
         return UNIXERR;
 
     // get relation data
-    status = relCat->getInfo(RELCATNAME, rd);
+    status = relCat->getInfo(relation, rd);
     if (status != OK) return status;
 
     // start insertFileScan on relation
-    iFile = new InsertFileScan(RELCATNAME, status);
+    iFile = new InsertFileScan(relation, status);
     if (status != OK) return status;
 
     // allocate buffer to hold record read from unix file
