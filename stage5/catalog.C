@@ -27,9 +27,9 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG: " << rec.data << endl;
-        if (strcmp((char*)rec.data, relation.c_str()) == 0) {
-            memcpy(&record, rec.data, sizeof(RelDesc));
+        cout << "DEBUG REL Getting: " << rec.data << endl;
+        memcpy(&record, rec.data, sizeof(RelDesc));
+        if (strcmp(record.relName, relation.c_str()) == 0) {
             delete hfs;
             return OK;
         }
@@ -51,6 +51,7 @@ const Status RelCatalog::addInfo(RelDesc & record)
 
     ifs = new InsertFileScan(RELCATNAME, status);
     if (status != OK) return status;
+
     //Add it to record
     rec.data = &record;
     rec.length = sizeof(RelDesc);
@@ -64,9 +65,33 @@ const Status RelCatalog::removeInfo(const string & relation)
     Status status;
     RID rid;
     HeapFileScan*  hfs;
+    Record rec;
+    RelDesc record;
 
     if (relation.empty()) return BADCATPARM;
 
+    hfs = new HeapFileScan(RELCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
+
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG REL Removing: " << rec.data << endl;
+        memcpy(&record, rec.data, sizeof(RelDesc));
+        if (strcmp(record.relName, relation.c_str()) == 0) {
+            hfs->deleteRecord();
+            delete hfs;
+            return OK;
+        }
+    }
+
+    delete hfs;
+    //Means can't find
+    return RELNOTFOUND;
 
 
 }
@@ -97,8 +122,27 @@ const Status AttrCatalog::getInfo(const string & relation,
 
     if (relation.empty() || attrName.empty()) return BADCATPARM;
 
+    hfs = new HeapFileScan(ATTRCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
 
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG ATTR Getting: " << rec.data << endl;
+        memcpy(&record, rec.data, sizeof(RelDesc));
+        if (strcmp(record.relName, relation.c_str()) == 0 && strcmp(record.attrName, attrName.c_str()) == 0) {
+            delete hfs;
+            return OK;
+        }
+    }
 
+    delete hfs;
+    //Means can't find
+    return ATTRNOTFOUND;
 
 }
 
@@ -106,12 +150,19 @@ const Status AttrCatalog::getInfo(const string & relation,
 const Status AttrCatalog::addInfo(AttrDesc & record)
 {
     RID rid;
+    Record rec;
     InsertFileScan*  ifs;
     Status status;
 
+    ifs = new InsertFileScan(ATTRCATNAME, status);
+    if (status != OK) return status;
 
-
-
+    //Add it to record
+    rec.data = &record;
+    rec.length = sizeof(AttrDesc);
+    status = ifs->insertRecord(rec, rid);
+    if (status != OK) return status;
+    return OK;
 
 }
 
@@ -127,6 +178,28 @@ const Status AttrCatalog::removeInfo(const string & relation,
 
     if (relation.empty() || attrName.empty()) return BADCATPARM;
 
+    hfs = new HeapFileScan(ATTRCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
+
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG ATTR Removing: " << rec.data << endl;
+        memcpy(&record, rec.data, sizeof(RelDesc));
+        if (strcmp(record.relName, relation.c_str()) == 0 && strcmp(record.attrName, attrName.c_str()) == 0) {
+            hfs->deleteRecord();
+            delete hfs;
+            return OK;
+        }
+    }
+
+    delete hfs;
+    //Means can't find
+    return ATTRNOTFOUND;
 }
 
 
@@ -138,12 +211,43 @@ const Status AttrCatalog::getRelInfo(const string & relation,
     RID rid;
     Record rec;
     HeapFileScan*  hfs;
+    RelDesc rd;
+    int attrsLeft;
 
     if (relation.empty()) return BADCATPARM;
 
+    status = relCat->getInfo(relation, rd);
+    if (status != OK) return status;
 
+    attrCnt = rd.attrCnt;
 
+    //Get Attributes
+    attrs = new AttrDesc[attrCnt];
 
+    hfs = new HeapFileScan(ATTRCATNAME, status);
+    if (status != OK) return status;
+    status = hfs->startScan(0, 0, STRING, NULL, EQ);
+    if (status != OK) return status;
+
+    attrsLeft = attrCnt - 1;
+    //Search for it
+    while ((status = hfs->scanNext(rid)) != FILEEOF){
+        if (attrsLeft < 0) {
+            break;
+        }
+        if (status != OK) return status;
+        status = hfs->getRecord(rec);
+        if (status != OK) return status;
+        cout << "DEBUG ATTR Getting: " << rec.data << endl;
+        memcpy(&attrs[attrsLeft], rec.data, sizeof(RelDesc));
+        if (strcmp(attrs[attrsLeft].relName, relation.c_str()) == 0) {
+            attrsLeft--;
+        }
+    }
+
+    delete hfs;
+    //Means can't find
+    return OK;
 }
 
 
