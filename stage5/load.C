@@ -33,10 +33,8 @@ const Status UT_Load(const string & relation, const string & fileName)
         return UNIXERR;
 
     // get relation data
-extern RelCatalog  *relCat;
-
-
-
+    status = relCat->getInfo(RELCATNAME, rd);
+    if (status != OK) return status;
 
     // start insertFileScan on relation
     iFile = new InsertFileScan(RELCATNAME, status);
