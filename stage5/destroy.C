@@ -20,6 +20,9 @@ const Status RelCatalog::destroyRel(const string & relation)
             relation == string(ATTRCATNAME))
         return BADCATPARM;
 
+    //remove all tuples from relcat and attrcat for this relation
+    attrCat->dropRelation(relation.c_str());
+    relCat->removeInfo(relation.c_str());
 
     destroyHeapFile(relation.c_str());
 
