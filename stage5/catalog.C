@@ -27,8 +27,8 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG REL Getting: " << (char*)rec.data << endl;
         memcpy(&record, rec.data, sizeof(RelDesc));
+        cout << "DEBUG REL Getting: " << record.relName << " - " << relation.c_str() << " - " << strcmp(record.relName, relation.c_str()) << endl;
         if (strcmp(record.relName, relation.c_str()) == 0) {
             delete hfs;
             return OK;

@@ -15,16 +15,15 @@ const Status RelCatalog::createRel(const string & relation,
     if (relation.length() >= sizeof rd.relName)
         return NAMETOOLONG;
 
-    status = getInfo(relation, rd);
+    status = relCat->getInfo(relation, rd);
     if (status != OK && status != RELNOTFOUND) return status;
     if (status == OK) return RELEXISTS ;
 
     //Check if it exists
-
     strcpy(rd.relName, relation.c_str());
     rd.attrCnt = attrCnt; // number of attributes
 
-    status = addInfo(rd);
+    status = relCat->addInfo(rd); //Create the relation in relcat
     if (status != OK) return status;
 
     int offset = 0;
@@ -41,6 +40,11 @@ const Status RelCatalog::createRel(const string & relation,
         status = attrCat->addInfo(ad);
         if (status != OK) return status;
     }
+
+    //Create heapfile
+    status = createHeapFile(relation);
+    if (status != OK) return status;
+
 
     return OK;
 

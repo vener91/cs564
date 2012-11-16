@@ -35,7 +35,7 @@ const Status RelCatalog::help(const string & relation)
     if (relation.empty()){
         cout << "Relation stuff goes here" << endl;
     } else {
-        return UT_Print(RELCATNAME);
+        return UT_Print(relation);
     }
 
 

@@ -52,6 +52,7 @@ const Status UT_Load(const string & relation, const string & fileName)
         RID rid;
         rec.data = record;
         rec.length = width;
+        cout << "DEBUG: Loading Record " << records << endl;
         if ((status = iFile->insertRecord(rec, rid)) != OK) return status;
         records++;
     }
