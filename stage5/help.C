@@ -27,14 +27,18 @@ using namespace std;
 
 const Status RelCatalog::help(const string & relation)
 {
-  Status status;
-  RelDesc rd;
-  AttrDesc *attrs;
-  int attrCnt;
+    Status status;
+    RelDesc rd;
+    AttrDesc *attrs;
+    int attrCnt;
 
-  if (relation.empty()) return UT_Print(RELCATNAME);
+    if (relation.empty()){
+        cout << "Relation stuff goes here" << endl;
+    } else {
+        return UT_Print(RELCATNAME);
+    }
 
 
 
-  return OK;
+    return OK;
 }
