@@ -28,58 +28,60 @@ using namespace std;
 const Status RelCatalog::help(const string & relation)
 {
     Status status;
-    RelDesc rd;
-    AttrDesc *attrs;
-    int attrCnt;
+    RelDesc* rd;
+    int attrCnt = 0;
     HeapFileScan* hfs;
     Record rec;
     RID rid;
     if (relation.empty()){
-         
+
         hfs = new HeapFileScan(RELCATNAME, status);
-	if(status != OK) return status;
-	status = hfs->startScan(0,0,STRING,NULL,EQ);
-	if(status != OK) return status;
+        if (status != OK) return status;
+        status = hfs->startScan(0, 0, STRING, NULL, EQ);
+        if (status != OK) return status;
 
+        /*
+        //Count number of relations
         while ((status = hfs->scanNext(rid)) != FILEEOF){
-	        if(status != OK) return status;
-            
-            status = hfs->getRecord(rec);
-	        if(status != OK) return status;
-	        
-            memcpy(&rd, rec.data, sizeof(RelDesc));
-            UT_Print(rd.relName);
-            cout<<"------------------------------"<<endl;
-	        
-	    }
+            attrCnt++;
+        }
+        hfs->resetScan();
+        */
 
-    }
-    else {
-        string type;
+        cout << "List of relations"<< endl << endl;
+        printf("%-*.*s ", 20, 20, "relName");
+        printf("%-*.*s ", 5, 5, "attrCnt");
+        printf("\n");
+
+        for(int j = 0; j < 20; j++) {
+            putchar('-');
+        }
+        printf("  ");
+        for(int j = 0; j < 5; j++) {
+            putchar('-');
+        }
+        printf("  ");
+        printf("\n");
+        //attrs = new AttrDesc[attrCnt];
+        //Search for it
+        while ((status = hfs->scanNext(rid)) != FILEEOF){
+            status = hfs->getRecord(rec);
+            if (status != OK) return status;
+            attrCnt++;
+            rd = (RelDesc*)(rec.data);
+            printf("%-*.*s  ", 20, 20, rd->relName);
+            printf("%-*d  ", 5, rd->attrCnt);
+            printf("\n");
+        }
+
+        // close scan and data file
+        if ((status = hfs->endScan()) != OK)
+            return status;
+        delete hfs;
+
+        cout << endl << "Number of relations: " << attrCnt << endl;
+    } else {
         UT_Print(relation);
-        cout<<endl;
-        status = attrCat->getRelInfo(relation, attrCnt, attrs);
-        //type, length, and offset are always zero for some reason
-        
-        /*for(int i = 0; i < attrCnt; i++){
-            //cout<<attrs[i].attrName<<":  "<<attrs[i].attrType<<"  "<<attrs[i].attrLen<<"  "<<attrs[i].attrOffset<<"  "<<"index: "<<i<<endl;
-            if(attrs[i].attrType == 0){
-                type = "String";
-                //cout<<type<<endl;
-            }
-            else if(attrs[i].attrType == 1){
-                type = "Integer";
-                //cout<<type<<endl;
-            }
-            else{
-                type = "Float";
-                //cout<<type<<endl;
-            }
-            
-                
-        }*/
-        
-        
     }
 
 

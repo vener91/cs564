@@ -28,7 +28,7 @@ const Status RelCatalog::getInfo(const string & relation, RelDesc &record)
         status = hfs->getRecord(rec);
         if (status != OK) return status;
         memcpy(&record, rec.data, sizeof(RelDesc));
-        cout << "DEBUG REL Getting: " << record.relName << " - " << relation.c_str() << " - " << strcmp(record.relName, relation.c_str()) << endl;
+        //cout << "DEBUG REL Getting: " << record.relName << " - " << relation.c_str() << " - " << strcmp(record.relName, relation.c_str()) << endl;
         if (strcmp(record.relName, relation.c_str()) == 0) {
             delete hfs;
             return OK;
@@ -80,7 +80,7 @@ const Status RelCatalog::removeInfo(const string & relation)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG REL Removing: " << (char*)rec.data << endl;
+        //cout << "DEBUG REL Removing: " << (char*)rec.data << endl;
         memcpy(&record, rec.data, sizeof(RelDesc));
         if (strcmp(record.relName, relation.c_str()) == 0) {
             hfs->deleteRecord();
@@ -132,7 +132,7 @@ const Status AttrCatalog::getInfo(const string & relation,
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
+        //cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
         memcpy(&record, rec.data, sizeof(AttrDesc));
         if (strcmp(record.relName, relation.c_str()) == 0 && strcmp(record.attrName, attrName.c_str()) == 0) {
             delete hfs;
@@ -188,7 +188,7 @@ const Status AttrCatalog::removeInfo(const string & relation,
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG ATTR Removing: " << (char*)rec.data << endl;
+        //cout << "DEBUG ATTR Removing: " << (char*)rec.data << endl;
         memcpy(&record, rec.data, sizeof(RelDesc));
         if (strcmp(record.relName, relation.c_str()) == 0 && strcmp(record.attrName, attrName.c_str()) == 0) {
             hfs->deleteRecord();
@@ -238,7 +238,7 @@ const Status AttrCatalog::getRelInfo(const string & relation,
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
+        //cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
         memcpy(&attrs[attrsLeft], rec.data, sizeof(AttrDesc));
         if (strcmp(attrs[attrsLeft].relName, relation.c_str()) == 0) {
             attrsLeft--;

@@ -40,7 +40,6 @@ const Status UT_Load(const string & relation, const string & fileName)
     if (status != OK) return status;
 
     for (i = 0; i < attrCnt; i++) {
-        cout << "Width: " << attrs[i].attrLen << endl;
         width += attrs[i].attrLen;
     }
 

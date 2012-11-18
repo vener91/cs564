@@ -21,10 +21,10 @@ const Status RelCatalog::destroyRel(const string & relation)
         return BADCATPARM;
 
     //remove all tuples from relcat and attrcat for this relation
-    attrCat->dropRelation(relation.c_str());
-    relCat->removeInfo(relation.c_str());
-
-    destroyHeapFile(relation.c_str());
+    status = attrCat->dropRelation(relation);
+    if (status != OK) return status;
+    status = destroyHeapFile(relation);
+    if (status != OK) return status;
 
     return OK;
 }
@@ -62,12 +62,14 @@ const Status AttrCatalog::dropRelation(const string & relation)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG Destory.c Rel: " << rec.data << endl;
+        //cout << "DEBUG Destory.c Rel: " << rec.data << endl;
         if (strcmp((char*)rec.data, relation.c_str()) == 0) {
             //Remove record
             hfs->deleteRecord();
         }
     }
+    status = hfs->endScan();
+    if (status != OK) return status;
 
     delete hfs;
 
@@ -81,12 +83,14 @@ const Status AttrCatalog::dropRelation(const string & relation)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        cout << "DEBUG Destory.c Rel: " << rec.data << endl;
+        //cout << "DEBUG Destory.c Rel: " << rec.data << endl;
         if (strcmp((char*)rec.data, relation.c_str()) == 0) {
             //Remove record
             hfs->deleteRecord();
         }
     }
+    status = hfs->endScan();
+    if (status != OK) return status;
 
     delete hfs;
     return OK;
