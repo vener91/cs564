@@ -133,7 +133,7 @@ const Status AttrCatalog::getInfo(const string & relation,
         status = hfs->getRecord(rec);
         if (status != OK) return status;
         cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
-        memcpy(&record, rec.data, sizeof(RelDesc));
+        memcpy(&record, rec.data, sizeof(AttrDesc));
         if (strcmp(record.relName, relation.c_str()) == 0 && strcmp(record.attrName, attrName.c_str()) == 0) {
             delete hfs;
             return OK;
@@ -239,7 +239,7 @@ const Status AttrCatalog::getRelInfo(const string & relation,
         status = hfs->getRecord(rec);
         if (status != OK) return status;
         cout << "DEBUG ATTR Getting: " << (char*)rec.data << endl;
-        memcpy(&attrs[attrsLeft], rec.data, sizeof(RelDesc));
+        memcpy(&attrs[attrsLeft], rec.data, sizeof(AttrDesc));
         if (strcmp(attrs[attrsLeft].relName, relation.c_str()) == 0) {
             attrsLeft--;
         }

@@ -36,6 +36,16 @@ const Status UT_Load(const string & relation, const string & fileName)
     status = relCat->getInfo(relation, rd);
     if (status != OK) return status;
 
+    status = attrCat->getRelInfo(relation, attrCnt, attrs);
+    if (status != OK) return status;
+
+    for (i = 0; i < attrCnt; i++) {
+        cout << "Width: " << attrs[i].attrLen << endl;
+        width += attrs[i].attrLen;
+    }
+
+    delete attrs;
+
     // start insertFileScan on relation
     iFile = new InsertFileScan(relation, status);
     if (status != OK) return status;
@@ -52,16 +62,16 @@ const Status UT_Load(const string & relation, const string & fileName)
         RID rid;
         rec.data = record;
         rec.length = width;
-        cout << "DEBUG: Loading Record " << records << endl;
+        //cout << "DEBUG: Loading Record " << records << " - " << nbytes<<endl;
         if ((status = iFile->insertRecord(rec, rid)) != OK) return status;
         records++;
     }
 
     // close heap file and unix file
     if (close(fd) < 0) return UNIXERR;
+    delete iFile;
 
-
-
+    return OK;
 
 }
 

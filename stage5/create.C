@@ -34,8 +34,8 @@ const Status RelCatalog::createRel(const string & relation,
         ad.attrOffset = offset;
         ad.attrType = attrList[i].attrType;
         ad.attrLen = attrList[i].attrLen;
+        ad.attrOffset = offset;
         offset += attrList[i].attrLen;
-
         //Add it
         status = attrCat->addInfo(ad);
         if (status != OK) return status;

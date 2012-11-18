@@ -86,7 +86,7 @@ const Status AttrCatalog::dropRelation(const string & relation)
     }
 
     delete hfs;
-
+    return OK;
 }
 
 
