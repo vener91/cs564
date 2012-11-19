@@ -8,7 +8,18 @@ const Status RelCatalog::createRel(const string & relation,
     Status status;
     RelDesc rd;
     AttrDesc ad;
-
+    const char* temp;
+    //verify that no duplicate attribute names are used
+    for(int j = 0; j < attrCnt; j++){
+        temp = attrList[j].attrName;
+        for(int k = 0; k < attrCnt; k++){
+            if((k != j) && ( (strcmp(temp, attrList[k].attrName)) == 0) ) {
+                //this attrName is already used
+                return DUPLATTR;
+            }//end if
+        }//end for k
+    }//end for j
+    
     if (relation.empty() || attrCnt < 1)
         return BADCATPARM;
 
