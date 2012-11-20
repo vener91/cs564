@@ -14,7 +14,7 @@
 const Status RelCatalog::destroyRel(const string & relation)
 {
     Status status;
-
+    //check the validity of the parameters
     if (relation.empty() ||
             relation == string(RELCATNAME) ||
             relation == string(ATTRCATNAME))
@@ -42,16 +42,14 @@ const Status RelCatalog::destroyRel(const string & relation)
 
 const Status AttrCatalog::dropRelation(const string & relation)
 {
-
+    //Create a HeapFileScan object to drop the relation
     HeapFileScan* hfs;
     Status status;
-    AttrDesc *attrs;
     Record rec;
     RID rid;
-    int attrCnt, i;
-
+    //check validity of parameter
     if (relation.empty()) return BADCATPARM;
-
+    
     hfs = new HeapFileScan(RELCATNAME, status);
     if (status != OK) return status;
     status = hfs->startScan(0, 0, STRING, NULL, EQ);
@@ -62,17 +60,16 @@ const Status AttrCatalog::dropRelation(const string & relation)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        //cout << "DEBUG Destory.c Rel: " << rec.data << endl;
         if (strcmp((char*)rec.data, relation.c_str()) == 0) {
             //Remove record
             hfs->deleteRecord();
         }
-    }
+    }//end while
+    //free up memory
     status = hfs->endScan();
     if (status != OK) return status;
-
     delete hfs;
-
+    //now scan through attribute catalog to remove relation's attr. tuples
     hfs = new HeapFileScan(ATTRCATNAME, status);
     if (status != OK) return status;
     status = hfs->startScan(0, 0, STRING, NULL, EQ);
@@ -83,17 +80,17 @@ const Status AttrCatalog::dropRelation(const string & relation)
         if (status != OK) return status;
         status = hfs->getRecord(rec);
         if (status != OK) return status;
-        //cout << "DEBUG Destory.c Rel: " << rec.data << endl;
         if (strcmp((char*)rec.data, relation.c_str()) == 0) {
             //Remove record
             hfs->deleteRecord();
         }
-    }
+    }//end while
+    //free up memory
     status = hfs->endScan();
     if (status != OK) return status;
-
     delete hfs;
+    //relation dropped successfully
     return OK;
-}
+}//end dropRelation()
 
 
