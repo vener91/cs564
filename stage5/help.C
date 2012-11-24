@@ -11,43 +11,35 @@ using namespace std;
 // define if debug output wanted
 
 
-//
-// Retrieves and prints information from the catalogs about the for the
-// user. If no relation is given (relation is NULL), then it lists all
-// the relations in the database, along with the width in bytes of the
-// relation, the number of attributes in the relation, and the number of
-// attributes that are indexed.  If a relation is given, then it lists
-// all of the attributes of the relation, as well as its type, length,
-// and offset, whether it's indexed or not, and its index number.
-//
-// Returns:
-// 	OK on success
-// 	error code otherwise
-//
-
+/**
+ * If a relname is not specified, help lists the names of all the relations in the database.
+ * Otherwise, it lists the name, type, length and offset of each attribute together with any other information you feel is useful.
+ *
+ * Returns:
+ * OK on success
+ * error code otherwise
+ **/
 const Status RelCatalog::help(const string & relation)
 {
     Status status;
     RelDesc* rd;
+    //length of attrs
     int attrCnt = 0;
     HeapFileScan* hfs;
     Record rec;
     RID rid;
+    //an array of all the attribute description data for a relation
+    AttrDesc *attrs;
+    //type is: String, Integer, and Float
+    string type;
+    //if empty print relations catalog 
     if (relation.empty()){
 
         hfs = new HeapFileScan(RELCATNAME, status);
         if (status != OK) return status;
         status = hfs->startScan(0, 0, STRING, NULL, EQ);
         if (status != OK) return status;
-
-        /*
-        //Count number of relations
-        while ((status = hfs->scanNext(rid)) != FILEEOF){
-            attrCnt++;
-        }
-        hfs->resetScan();
-        */
-
+        //formatted relations catalog output
         cout << "List of relations"<< endl << endl;
         printf("%-*.*s ", 20, 20, "relName");
         printf("%-*.*s ", 5, 5, "attrCnt");
@@ -62,7 +54,6 @@ const Status RelCatalog::help(const string & relation)
         }
         printf("  ");
         printf("\n");
-        //attrs = new AttrDesc[attrCnt];
         //Search for it
         while ((status = hfs->scanNext(rid)) != FILEEOF){
             status = hfs->getRecord(rec);
@@ -80,12 +71,32 @@ const Status RelCatalog::help(const string & relation)
         delete hfs;
 
         cout << endl << "Number of relations: " << attrCnt << endl;
-    } else {
-        UT_Print(relation);
-    }
-
-
-
-
+    } else { // if a relation given print out the description information for its attributes
+        cout << endl;
+        status = attrCat->getRelInfo(relation, attrCnt, attrs);
+        cout << "Relation: " << relation << endl;
+	//add a border 
+        cout << "------------------------------------" << endl;
+        if (status != OK) return status;
+        for(int i = 0; i < attrCnt; i++) {
+            //convert attrType from int representation back to string for output
+            if(attrs[i].attrType == 0){
+                type = "String";
+            }
+            else if(attrs[i].attrType == 1){
+                type = "Integer";
+            }
+            else{
+                type = "Float";
+            }
+            cout << "Attribute: " << attrs[i].attrName << endl;
+            cout << "Type: " << type << ", ";
+            cout << "Length: " << attrs[i].attrLen << ", ";
+            cout << "Offset: " << attrs[i].attrOffset << endl;  
+        
+        }//end for loop
+        
+    }//end else block
+    //help executed OK
     return OK;
-}
+}//end help()
