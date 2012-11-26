@@ -10,17 +10,55 @@
  * 	an error code otherwise
  */
 
-const Status QU_Delete(const string & relation, 
-		       const string & attrName, 
+#include "stdio.h"
+#include "stdlib.h"
+const Status QU_Delete(const string & relation,
+		       const string & attrName,
 		       const Operator op,
-		       const Datatype type, 
+		       const Datatype type,
 		       const char *attrValue)
 {
-// part 6
-return OK;
+    Status status;
+    AttrDesc attrDesc;
+    const char* filter;
+    int resultTupCnt = 0;
 
+    HeapFileScan relScan(relation, status);
+    if (status != OK) { return status; }
 
+    status = attrCat->getInfo(relation, attrName, attrDesc);
+    if (status != OK) { return status; }
 
+    int tmpInt;
+    float tmpFloat;
+    switch (type) {
+        case INTEGER:
+            tmpInt = atoi(attrValue);
+            filter = (char*)&tmpInt;
+            break;
+        case FLOAT:
+            tmpFloat = atof(attrValue);
+            filter = (char*)&tmpFloat;
+            break;
+        case STRING:
+            filter = attrValue;
+            break;
+    }
+
+    status = relScan.startScan(attrDesc.attrOffset, attrDesc.attrLen, type, filter, op);
+    if (status != OK) { return status; }
+
+    RID relRID;
+    while (relScan.scanNext(relRID) == OK) {
+        status = relScan.deleteRecord();
+        if (status != OK) { return status; }
+        resultTupCnt++;
+    }
+
+    printf("deleted %d result tuples \n", resultTupCnt);
+
+    // part 6
+    return OK;
 }
 
 

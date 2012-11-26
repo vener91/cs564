@@ -1,1 +1,2 @@
-run testdb < ./testqueries/qu.1
+break insert.C:48
+run testdb < ./testqueries/qu.5

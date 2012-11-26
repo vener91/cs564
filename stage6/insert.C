@@ -34,34 +34,41 @@ const Status QU_Insert(const string & relation,
     Record outputRec;
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
-    RID outRID;
 
-    int offset = 0;
     for (int i = 0; i < attrCnt; i++) {
-        offset = 0; //reset offset
         //Iterate through for a match
         for (int j = 0; j < relAttrCnt; j++) {
-            if (strcmp(relAttrs[j].relName, attrList[i].relName) == 0) {
+            if (strcmp(relAttrs[j].attrName, attrList[i].attrName) == 0) {
                 if (attrList[i].attrValue == NULL) {
                     return ATTRTYPEMISMATCH; //Not sure if this is the right error
                 }
-                memcpy(outputData + offset, (char *)attrList[i].attrValue, attrList[i].attrLen);
+
+                char* actualAttrValue;
+                int tmpInt;
+                float tmpFloat;
+                switch (attrList[i].attrType) {
+                    case INTEGER:
+                        tmpInt = atoi((char*)attrList[i].attrValue);
+                        actualAttrValue = (char*)&tmpInt;
+                        break;
+                    case FLOAT:
+                        tmpFloat = atof((char*)attrList[i].attrValue);
+                        actualAttrValue = (char*)&tmpFloat;
+                        break;
+                    case STRING:
+                        actualAttrValue = (char*)attrList[i].attrValue;
+                        break;
+                }
+                memcpy(outputData + relAttrs[j].attrOffset, actualAttrValue, relAttrs[j].attrLen);
             }
-            offset += relAttrs[j].attrLen;
         }
 
     }
 
+    RID outRID;
     //Done creating record, inserting..
     status = resultRel.insertRecord(outputRec, outRID);
     if (status != OK) { return status; }
-
-    /*
-    Insert a tuple with the given attribute values (in attrList) in relation.
-    The value of the attribute is supplied in the attrValue member of the attrInfo structure.
-    Since the order of the attributes in attrList[] may not be the same as in the relation, you might have to rearrange them before insertion.
-    If no value is specified for an attribute, you should reject the insertion as Minirel does not implement NULLs.
-    */
 
     return OK;
 
