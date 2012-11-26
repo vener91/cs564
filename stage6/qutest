@@ -152,6 +152,7 @@ else
 		if ( -r $TESTSDIR/qu.$testnum ) then
 			echo running test '#' $testnum '****************'
 			$DBCREATE  $TESTDB
+            #gdb $MINIREL
 			$MINIREL   $TESTDB < $TESTSDIR/qu.$testnum
 			echo "y" | $DBDESTROY $TESTDB
 		else
