@@ -23,6 +23,11 @@ const Status QU_Delete(const string & relation,
     const char* filter;
     int resultTupCnt = 0;
 
+    //if no attrName given then delete entire relation
+    if(attrName.length() == 0){
+       status = relCat->destroyRel(relation);
+       return status;
+    }
     HeapFileScan relScan(relation, status);
     if (status != OK) { return status; }
 
