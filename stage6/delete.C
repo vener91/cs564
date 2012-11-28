@@ -22,14 +22,26 @@ const Status QU_Delete(const string & relation,
     AttrDesc attrDesc;
     const char* filter;
     int resultTupCnt = 0;
-
-    //if no attrName given then delete entire relation
-    if(attrName.length() == 0){
-       status = relCat->destroyRel(relation);
-       return status;
-    }
+    RID relRID;
     HeapFileScan relScan(relation, status);
     if (status != OK) { return status; }
+    //if no attrName given then delete all rows inrelation
+    if(attrName.length() == 0){
+       
+       status = relScan.startScan(0, 0, STRING, NULL, EQ);
+       if (status != OK) { return status; }
+       
+       while (relScan.scanNext(relRID) == OK) {
+          status = relScan.deleteRecord();
+          if (status != OK) { return status; }
+              resultTupCnt++;
+       }
+       printf("deleted %d result tuples \n", resultTupCnt);
+       return OK;
+    }
+       
+    
+   
 
     status = attrCat->getInfo(relation, attrName, attrDesc);
     if (status != OK) { return status; }
@@ -53,7 +65,7 @@ const Status QU_Delete(const string & relation,
     status = relScan.startScan(attrDesc.attrOffset, attrDesc.attrLen, type, filter, op);
     if (status != OK) { return status; }
 
-    RID relRID;
+    //RID relRID;
     while (relScan.scanNext(relRID) == OK) {
         status = relScan.deleteRecord();
         if (status != OK) { return status; }
