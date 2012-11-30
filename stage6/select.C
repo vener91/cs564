@@ -34,18 +34,23 @@ const Status QU_Select(const string & result,
     const char* filter;
 
     reclen = 0;
+    //an array of attrDesc to hold all the descriptions for the projection
     projNamesDesc = new AttrDesc[projCnt];
+    //tabulate the total length of the projection record
     for (int i = 0; i < projCnt; i++) {
         Status status = attrCat->getInfo(projNames[i].relName, projNames[i].attrName, projNamesDesc[i]);
-        reclen += projNamesDesc->attrLen;
+        reclen += projNamesDesc[i].attrLen;
         if (status != OK) { return status; }
     }
-
+    //implementation of select operation
     if (attr != NULL) { //SELECT ALL
+        //get info for attr
+        //e.g. attr op attrvalue
         status = attrCat->getInfo(string(attr->relName), string(attr->attrName), attrDesc);
 
         int tmpInt;
         float tmpFloat;
+        //convert to proper data type
         switch (attr->attrType) {
             case INTEGER:
                 tmpInt = atoi(attrValue);
@@ -60,7 +65,10 @@ const Status QU_Select(const string & result,
                 break;
         }
         myOp = op;
+    //if null than there is no where clause
+    //select all tuple for projection attributes
     } else {
+    
         strcpy(attrDesc.relName, projNames[0].relName);
         strcpy(attrDesc.attrName, projNames[0].attrName);
         attrDesc.attrOffset = 0;
@@ -88,6 +96,7 @@ const Status ScanSelect(const string & result,
         const int reclen)
 {
     Status status;
+    //used to keep track of how many total tuples are selected
     int resultTupCnt = 0;
 
     // open the result table
@@ -98,9 +107,8 @@ const Status ScanSelect(const string & result,
     Record outputRec;
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
-
     // start scan on outer table
-    HeapFileScan relScan(string(attrDesc->relName), status);
+    HeapFileScan relScan(attrDesc->relName, status);
     if (status != OK) { return status; }
 
     status = relScan.startScan(attrDesc->attrOffset, attrDesc->attrLen, (Datatype) attrDesc->attrType, filter, op);
@@ -118,6 +126,7 @@ const Status ScanSelect(const string & result,
         for (int i = 0; i < projCnt; i++) {
             memcpy(outputData + outputOffset, (char *)relRec.data + projNames[i].attrOffset, projNames[i].attrLen);
             outputOffset += projNames[i].attrLen;
+       
         } // end copy attrs
 
         // add the new record to the output relation
@@ -126,7 +135,6 @@ const Status ScanSelect(const string & result,
         ASSERT(status == OK);
         resultTupCnt++;
     }
-
     printf("selected %d result tuples \n", resultTupCnt);
     return OK;
 }
