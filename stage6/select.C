@@ -12,13 +12,21 @@ const Status ScanSelect(const string & result,
 			const int reclen);
 
 /*
- * Selects records from the specified relation.
+ * Selects records from the specified relation using a
+ * HeapFileScan. The project list is defined by 
+ * the parameters projCnt and projNames and is done on-the-fly.
+ * <i>The search value is always supplied as the character string attrValue.
+ * If attr is NULL, an unconditional scan of the input table should be performed.</i>
  *
- * Returns:
- * 	OK on success
- * 	an error code otherwise
+ * @param result
+ * @param projCnt
+ * @param projNames[]
+ * @param attr
+ * @param op
+ * @param attrValue
+ * @return: OK on success
+ * an error code otherwise
  */
-
 const Status QU_Select(const string & result,
         const int projCnt,
         const attrInfo projNames[],
@@ -68,7 +76,7 @@ const Status QU_Select(const string & result,
     //if null than there is no where clause
     //select all tuple for projection attributes
     } else {
-    
+        //default attrDesc for an unconditional scan
         strcpy(attrDesc.relName, projNames[0].relName);
         strcpy(attrDesc.attrName, projNames[0].attrName);
         attrDesc.attrOffset = 0;
@@ -77,7 +85,7 @@ const Status QU_Select(const string & result,
         filter = NULL;
         myOp = EQ;
     }
-
+    //now that the book keeping is done call ScanSelect to actually build the result table
     status = ScanSelect(result, projCnt, projNamesDesc, &attrDesc, myOp, filter, reclen);
     if (status != OK) { return status; }
 
@@ -87,6 +95,21 @@ const Status QU_Select(const string & result,
 
 #include "stdio.h"
 #include "stdlib.h"
+/**
+ * This function scans the relation for tuples
+ * that match the filter predicate and copy these
+ * tuples into a relation named result.
+ *
+ * @param result
+ * @param projCnt
+ * @param projNames[]
+ * @param attrDesc
+ * @param op
+ * @param filter
+ * @param reclen
+ * @return: OK on success
+ * an error code otherwise
+**/
 const Status ScanSelect(const string & result,
         const int projCnt,
         const AttrDesc projNames[],
@@ -102,8 +125,9 @@ const Status ScanSelect(const string & result,
     // open the result table
     InsertFileScan resultRel(result, status);
     if (status != OK) { return status; }
-
+    //initialize pointer a location of size reclen
     char outputData[reclen];
+    //the record to be copied to later
     Record outputRec;
     outputRec.data = (void *) outputData;
     outputRec.length = reclen;
@@ -135,6 +159,7 @@ const Status ScanSelect(const string & result,
         ASSERT(status == OK);
         resultTupCnt++;
     }
+    //before returning print out the total number of tuples in this relation
     printf("selected %d result tuples \n", resultTupCnt);
     return OK;
 }
