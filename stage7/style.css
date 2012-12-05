@@ -1,0 +1,84 @@
+@font-face {
+  font-family: 'Text Me One';
+    font-style: normal;
+  font-weight: 400;
+    src: local('Text Me One'), local('TextMeOne-Regular'), url(http://themes.googleusercontent.com/static/fonts/textmeone/v1/PqZhD5HyRPwtzI5fOKmj9LrIa-7acMAeDBVuclsi6Gc.woff) format('woff');
+}
+
+body {
+    background-image: url('bg.png');
+}
+
+.logo {
+    color: #FF8B3D;
+    font-family: 'Text Me One', sans-serif;
+}
+
+.header {
+    margin-top: 40px;
+}
+
+.header .logo {
+    font-size: 50px;
+    line-height: 50px;
+    padding: 0px 10px 10px 80px;
+}
+
+.header span {
+}
+/* List */
+.song-list {
+    padding: 20px 70px 10px 70px;
+    box-sizing: border-box;
+}
+
+/* Main page */
+.result-warp {
+    margin-top: 15px;
+    overflow: auto;
+    display: none;
+}
+
+.centerpiece {
+    position: relative;
+    width: 700px;
+    margin: 0 auto;
+    margin-top: 250px;
+}
+
+.centerpiece .logo {
+    height: 50px;
+    font-size: 100px;
+    margin-top: 5px;
+    padding-left: 15px;
+}
+
+.logo span{
+    font-size: 20px;
+    color: #666;
+    font-family: "Helvetica", sans-serif;
+}
+
+.search {
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.search input  {
+    width: 100%;
+    box-sizing: border-box;
+    height: 45px;
+    margin-bottom: 0px;
+    font-size: 20px;
+    line-height: 20px;
+}
+
+.links {
+    text-align: center;
+    padding: 10px;
+}
+
+.debug {
+    display: none;
+}
