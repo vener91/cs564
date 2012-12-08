@@ -70,9 +70,15 @@ $(document).ready(function(){
                 data: {id: window.location.hash.substr(1)},
                 success: function(data){
                     if (typeof(data) === 'object') {
-                        $.each(data, function(key, value){
-                            $('input#' + key).val(value);
-                        });
+                        if (typeof(data.msg) !== 'undefined') {
+                            fatalError(data.msg);
+                        } else {
+                            $.each(data, function(key, value){
+                                $('input#' + key).val(value);
+                            });
+                            window.location.hash = data.id;
+                            success("Song added");
+                        }
                     }
                 }
         });
@@ -102,7 +108,7 @@ $(document).ready(function(){
                 success: function(data){
                     if (typeof(data) === 'object') {
                         if (typeof(data.msg) !== 'undefined') {
-                            fatalError(msg);
+                            fatalError(data.msg);
                         } else {
                             $.each(data, function(key, value){
                                 $('input#' + key).val(value);
@@ -123,7 +129,7 @@ $(document).ready(function(){
                 success: function(data){
                     if (typeof(data) === 'object') {
                         if (typeof(data.msg) !== 'undefined') {
-                            fatalError(msg);
+                            fatalError(data.msg);
                         } else {
                             $.each(data, function(key, value){
                                 $('input#' + key).val(value);
@@ -151,7 +157,7 @@ $(document).ready(function(){
                 success: function(data){
                     if (typeof(data) === 'object') {
                         if (typeof(data.msg) !== 'undefined') {
-                            fatalError(msg);
+                            fatalError(data.msg);
                         } else {
                             $('input').val("");
                             $("#id").val("NEW SONG");

@@ -28,7 +28,7 @@ body {
 }
 
 /* List */
-.song-list {
+.search-list, .song-list {
     padding: 20px 70px 10px 70px;
     box-sizing: border-box;
 }

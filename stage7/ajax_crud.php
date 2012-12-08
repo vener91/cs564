@@ -4,11 +4,12 @@ function fatalError($msg = null) {
     if ($msg == null) {
         $msg = "Error Occured";
     }
-    json_encode(array('msg' => $msg));
+    echo json_encode(array('msg' => $msg));
     die();
 }
 
 function ensureArtistAlbum(){
+    global $db;
     //Check if artist exists
     $artistRetval = $db->prepare("SELECT * FROM artist WHERE artist.name = :artist");
     $artistRetval->execute(array(":artist" => $_REQUEST['artist']));
