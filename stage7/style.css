@@ -26,10 +26,19 @@ body {
 
 .header span {
 }
+
 /* List */
 .song-list {
     padding: 20px 70px 10px 70px;
     box-sizing: border-box;
+}
+
+/* Edit */
+.edit-alert{
+    width: 500px;
+    margin-left: 50px;
+    margin-top: 20px;
+    display: none;
 }
 
 /* Main page */
