@@ -8,7 +8,7 @@ if (!empty($_REQUEST['song'])) {
 }
 
 if (!empty($_REQUEST['artist'])) {
-    $query .= "AND artist.name ILIKE :artist";
+    $query .= "AND artist.name ILIKE :artist ";
     $params[':artist'] = "%" . $_REQUEST['artist'] . "%";
 }
 
