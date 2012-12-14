@@ -81,6 +81,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         echo json_encode($row);
         break;
     case 'PUT':
+        parse_str(file_get_contents('php://input'), $_REQUEST);
         if (!is_numeric($_REQUEST['id'])) {
             fatalError();
         }
@@ -89,7 +90,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $songRetval->execute(array(":name" => $_REQUEST['name'], ":duration" => $_REQUEST['duration'], ":artist_id" => $_REQUEST['artist_id'], ":album_id" => $_REQUEST['album_id'], ":id" => $_REQUEST['id']));
         $errorInfo = $songRetval->errorInfo();
         if($errorInfo[0] != "00000") { fatalError(); }
-        $_REQUEST['id'] = $db->lastInsertId('song_id');
 
         $songRetval = $db->prepare("SELECT song.id, song.name, song.duration, artist.name as artist, artist.real_name, artist.birthdate, album.name as album, album.released_date FROM song, artist, album WHERE song.artist_id = artist.id AND song.album_id = album.id AND song.id = :songId ORDER BY artist.name");
         $songRetval->execute(array(":songId" => $_REQUEST['id']));
@@ -99,6 +99,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         echo json_encode($row);
         break;
     case 'DELETE':
+        parse_str(file_get_contents('php://input'), $_REQUEST);
         if (!is_numeric($_REQUEST['id'])) {
             fatalError();
         }
@@ -107,6 +108,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $songRetval->execute(array(":id" => $_REQUEST['id']));
         $errorInfo = $songRetval->errorInfo();
         if($errorInfo[0] != "00000") { fatalError(); }
+        echo json_encode(array());
         break;
 }
 ?>

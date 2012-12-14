@@ -77,7 +77,6 @@ $(document).ready(function(){
                                 $('input#' + key).val(value);
                             });
                             window.location.hash = data.id;
-                            success("Song added");
                         }
                     }
                 }

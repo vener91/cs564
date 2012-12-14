@@ -1,6 +1,6 @@
 <?php
 include('db.php');
-$songRetval = $db->query("SELECT song.name, artist.name as artist, album.name as album FROM song, artist, album WHERE song.artist_id = artist.id AND song.album_id = album.id ORDER BY artist.name");
+$songRetval = $db->query("SELECT song.id, song.name, artist.name as artist, album.name as album FROM song, artist, album WHERE song.artist_id = artist.id AND song.album_id = album.id ORDER BY artist.name");
 include('header.php');
 ?>
 <div class="header"><a href="index.php" class="logo">Krankit</a><span>Music List</span></div>
@@ -11,12 +11,13 @@ include('header.php');
                 <th>Song Name</th>
                 <th>Artist</th>
                 <th>Album</th>
+                <th>&nbsp;</th>
             </tr>
         </thead>
         <tbody>
             <?php
                 while (($row = $songRetval->fetch(PDO::FETCH_ASSOC))) {
-                    echo "<tr><td>{$row['name']}<td>{$row['artist']}<td>{$row['album']}";
+                    echo "<tr><td>{$row['name']}<td>{$row['artist']}<td>{$row['album']}<td><a href='edit.php#{$row['id']}'>Edit</a>";
                 }
             ?>
         </tbody>
